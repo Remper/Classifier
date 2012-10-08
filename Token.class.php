@@ -34,13 +34,14 @@ class Token {
 	 * @return bool Результат запроса
 	 */
 	public static function isValidToken($token) {
-		$db = Tokenizer\Database::getDB();
+		return 1;
+		/*$db = Tokenizer\Database::getDB();
 		try {
 			$db->reconnect();
 			return $db->isTokenExists($token);
 		} catch (Exception $e) {
 			return false;
-		}
+		}*/
 	}
 	
 	/**
@@ -49,13 +50,14 @@ class Token {
 	 * @return array Ассоциативный массив коэффициентов vector => coeff
 	 */
 	public static function getTokenCoeff() {
-		$db = Tokenizer\Database::getDB();
+		return array();
+		/*$db = Tokenizer\Database::getDB();
 		try {
 			$db->reconnect();
 			return $db->getTokenCoeff();
 		} catch (Exception $e) {
 			return array();
-		}
+		}*/
 	}
 }
 

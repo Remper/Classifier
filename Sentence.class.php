@@ -28,12 +28,12 @@ class Sentence {
 	 */
 	public function split($exceptions, $prefixes) {
 		//Инициализируем коэффициенты
-		$coeff = Tokenizer\Token::getTokenCoeff();
+		$coeff = Token::getTokenCoeff();
 	    $result = array();
 	    $token = '';
 		
 		//Непонятная пока уличная магия с нормализацией текста
-	    $txt = Normalizer::normalize($txt, Normalizer::FORM_C) . "  ";
+	    $txt = $this->text . "  ";
 	
 		//Цикл по всем символам текста
 	    for ($i = 0; $i < mb_strlen($txt, 'UTF-8'); ++$i) {
@@ -47,7 +47,7 @@ class Sentence {
 	        $chain = $chain_left = $chain_right = '';
 	        $odd_symbol = '';
 			//Определение небуквенных символов в слове ([i, i+1])
-	        if (Tokenizer\Classificator::is_hyphen($char) || Tokenizer\Classificator::is_hyphen($nextchar)) {
+	        if (Classificator::is_hyphen($char) || Classificator::is_hyphen($nextchar)) {
 	            $odd_symbol = '-';
 	        }
 	        elseif (preg_match('/([\.\/\?\=\:&"!\+\(\)])/u', $char, $match) || preg_match('/([\.\/\?\=\:&"!\+\(\)])/u', $nextchar, $match)) {
@@ -58,8 +58,8 @@ class Sentence {
 	        	//Идём назад до пробела или непонятной неведомой хрени
 	            for ($j = $i; $j >= 0; --$j) {
 	                $t = mb_substr($txt, $j, 1, 'UTF-8');
-	                if (($odd_symbol == '-' && (Tokenizer\Classificator::is_cyr($t) || Tokenizer\Classificator::is_hyphen($t) || $t === "'")) ||
-	                    ($odd_symbol != '-' && !Tokenizer\Classificator::is_space($t))) {
+	                if (($odd_symbol == '-' && (Classificator::is_cyr($t) || Classificator::is_hyphen($t) || $t === "'")) ||
+	                    ($odd_symbol != '-' && !Classificator::is_space($t))) {
 	                    $chain_left = $t.$chain_left;
 	                } else {
 	                    break;
@@ -72,8 +72,8 @@ class Sentence {
 				//Идём вперёд до пробела или непонятной неведомой хрени
 	            for ($j = $i+1; $j < mb_strlen($txt, 'UTF-8'); ++$j) {
 	                $t = mb_substr($txt, $j, 1, 'UTF-8');
-	                if (($odd_symbol == '-' && (Tokenizer\Classificator::is_cyr($t) || Tokenizer\Classificator::is_hyphen($t) || $t === "'")) ||
-	                    ($odd_symbol != '-' && !Tokenizer\Classificator::is_space($t))) {
+	                if (($odd_symbol == '-' && (Classificator::is_cyr($t) || Classificator::is_hyphen($t) || $t === "'")) ||
+	                    ($odd_symbol != '-' && !Classificator::is_space($t))) {
 	                    $chain_right .= $t;
 	                } else {
 	                    break;
@@ -88,17 +88,17 @@ class Sentence {
 	        }
 	
 			//Просчитываем вектор признаков для символа?
-	        $vector = array_merge(Tokenizer\Classificator::char_class($char), Tokenizer\Classificator::char_class($nextchar),
+	        $vector = array_merge(Classificator::char_class($char), Classificator::char_class($nextchar),
 	            array(
-	                Tokenizer\Classificator::is_number($prevchar),
-	                Tokenizer\Classificator::is_number($nnextchar),
-	                ($odd_symbol == '-' ? Tokenizer\Classificator::is_dict_chain($chain): 0),
-	                ($odd_symbol == '-' ? Tokenizer\Classificator::is_suffix($chain_right) : 0),
-	                Tokenizer\Classificator::is_same_pm($char, $nextchar),
-	                (($odd_symbol && $odd_symbol != '-') ? Tokenizer\Classificator::looks_like_url($chain, $chain_right) : 0),
-	                (($odd_symbol && $odd_symbol != '-') ? Tokenizer\Classificator::is_exception($chain, $exceptions) : 0),
-	                ($odd_symbol == '-' ? Tokenizer\Classificator::is_prefix($chain_left, $prefixes) : 0),
-	                (($odd_symbol == ':' && $chain_right !== '') ? Tokenizer\Classificator::looks_like_time($chain_left, $chain_right) : 0)
+	                Classificator::is_number($prevchar),
+	                Classificator::is_number($nnextchar),
+	                ($odd_symbol == '-' ? Classificator::is_dict_chain($chain): 0),
+	                ($odd_symbol == '-' ? Classificator::is_suffix($chain_right) : 0),
+	                Classificator::is_same_pm($char, $nextchar),
+	                (($odd_symbol && $odd_symbol != '-') ? Classificator::looks_like_url($chain, $chain_right) : 0),
+	                (($odd_symbol && $odd_symbol != '-') ? Classificator::is_exception($chain, $exceptions) : 0),
+	                ($odd_symbol == '-' ? Classificator::is_prefix($chain_left, $prefixes) : 0),
+	                (($odd_symbol == ':' && $chain_right !== '') ? Classificator::looks_like_time($chain_left, $chain_right) : 0)
 	        ));
 	        $vector = implode('', $vector);
 	
@@ -107,13 +107,15 @@ class Sentence {
 	        } else {
 	            $sum = 0.5;
 	        }
-	
+			var_dump($vector);
+			var_dump($char);
+			var_dump($chain);
 	        $token .= $char;
 	
 	        if ($sum > 0) {
 	            $token = trim($token);
 	            if ($token !== '')
-					array_push($result, new Tokenizer\Token($token, $vector, $sum));
+					array_push($result, new Token($token, $vector, $sum));
 	            $token = '';
 	        }
 	    }
