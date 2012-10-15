@@ -107,10 +107,12 @@ class Sentence {
 	        } else {
 	            $sum = 0.5;
 	        }
+	        $token .= $char;
 			var_dump($vector);
 			var_dump($char);
 			var_dump($chain);
-	        $token .= $char;
+			var_dump($token);
+			echo "<br/>";
 	
 	        if ($sum > 0) {
 	            $token = trim($token);

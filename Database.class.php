@@ -12,6 +12,12 @@ class Database {
     private $user = '';
 	private $pass = '';
 	private $db = '';
+	//Соединение
+	private $conn;
+
+//////
+// Функции обслуживания соединения
+//////
 	
 	/**
 	 * Вернуть экземпляр класса
@@ -20,7 +26,7 @@ class Database {
 	 */
     public static function getDB() {
         if ( is_null(self::$instance) ) {
-            self::$instance = new Singleton;
+            self::$instance = new Database();
         }
         return self::$instance;
     }
@@ -30,13 +36,23 @@ class Database {
 	 * 
 	 * @param string $user Имя пользователя
 	 * @param string $pass Пароль
-	 * @param string $db База данных для обращения
+	 * @param string $db DSN для обращения
 	 * @throws Exception
 	 */
     public function connect($user, $pass, $db) {
     	$this->user = $user;
 		$this->pass = $pass;
 		$this->db = $db;
+		
+		try {
+			//Инициализируем объект базы данных
+			$this->conn = new PDO($this->db,  $this->user, $this->pass);
+			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			//Устанавливаем дефолтную кодировку
+			$sth = $this->db->query('SET NAMES utf8');
+		} catch (PDOException $e) {
+			throw new Exception("Невозможно подключиться к базе данных");
+		}
 	}
 	
 	/**
@@ -45,7 +61,11 @@ class Database {
 	 * @return bool Подключены ли мы к базе
 	 */
 	public function isConnected() {
-		
+		try {
+			$sth = $this->db->query('SHOW TABLES');
+		} catch (PDOException $e) {
+			return false;
+		}
 	}
 	
 	/**
@@ -64,9 +84,9 @@ class Database {
 		return true;
 	}
 	
-	//////
-	// Геттеры
-	//////
+//////
+// Геттеры
+//////
 	
 	/**
 	 * Получить массив коэффициентов для всех известных векторов
@@ -78,9 +98,9 @@ class Database {
 		return array();
 	}
 	
-	//////
-	// Функции поиска
-	//////
+//////
+// Функции поиска
+//////
 	
 	/**
 	 * Существует ли заданный токен в базе
@@ -93,9 +113,9 @@ class Database {
 		return true;
 	}
 	
-	//////
-	// Функции сохранения сущностей в базу
-	//////
+//////
+// Функции сохранения сущностей в базу
+//////
 	
 	/**
 	 * Сохранить текст в базу данных
@@ -136,6 +156,28 @@ class Database {
 	 */
 	public function saveToken($token) {
 		
+	}
+	
+//////
+// Служебная фигня
+//////
+	
+	/**
+	 * Выполнить запрос в базу данных
+	 * 
+	 * @param string $query Запрос к базе
+	 * @param array $params Параметры запроса
+	 * @return PDOStatement Объект запроса в базу
+	 * @throws PDOException
+	 */
+	private function ExecuteQuery($query, $params) {
+		$dbo = $this->db->prepare($query);
+		foreach($params as $param) {
+			$dbo->bindValue($param[0], $param[1], $param[2]);
+		}
+		$dbo->execute();
+		
+		return $dbo;
 	}
 	
     private function __construct() {}

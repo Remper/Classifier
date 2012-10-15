@@ -83,7 +83,7 @@ class Classificator {
 	
 	public static function is_dict_chain($chain) {
 	    if (!$chain) return 0;
-	    return (int)(Tokenizer\Token::isValidToken(mb_strtolower($chain, 'UTF-8')) > 0);
+	    return (int)(Token::isValidToken(mb_strtolower($chain, 'UTF-8')) > 0);
 	}
 	
 	public static function is_suffix($s) {
