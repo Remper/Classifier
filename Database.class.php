@@ -95,7 +95,15 @@ class Database {
 	 * @throws Exception
 	 */
 	public function getTokenCoeff() {
-		return array();
+		$result = $this->ExecuteQuery("
+			SELECT
+				`vector`, `coeff`
+			FROM `coeffs`
+		");
+		if (!($result = $result->fetch(PDO::FETCH_ASSOC)))
+			throw new Exception("Can't work without data");
+		
+		return $result;
 	}
 	
 //////
@@ -110,7 +118,17 @@ class Database {
 	 * @throws Exception
 	 */
 	public function isTokenExists($token) {
-		return true;
+		$result = $this->ExecuteQuery("
+			SELECT
+				count(*) AS ccc
+			FROM `tokens`
+			WHERE `lemma_id` <> 0 AND `text` = :token
+			", array(
+				array(":token", $token, PDO::PARAM_STR)
+			)
+		);
+		$result = $result->fetch(PDO::FETCH_ASSOC);
+		return (bool) $result['ccc'];
 	}
 	
 //////
@@ -125,37 +143,86 @@ class Database {
 	 * @throws Exception
 	 */
 	public function saveText($text) {
-		
+		$result = $this->ExecuteQuery("
+			SELECT
+				count(*) AS ccc
+			FROM `tokens`
+			WHERE `lemma_id` <> 0 AND `text` = :token
+			", array(
+				array(":token", $token, PDO::PARAM_STR)
+			)
+		);
+		$result = $result->fetch(PDO::FETCH_ASSOC);
+		return (bool) $result['ccc'];
 	}
 	
 	/**
 	 * Сохранить параграф в базу данных
 	 * 
 	 * @param string $paragraph Параграф для сохранения
+	 * @param int $textid ID текста-родителя
+	 * @return int ID параграфа
 	 * @throws Exception
 	 */
-	public function saveParagraph($paragraph) {
-		
+	public function saveParagraph($paragraph, $textid) {
+		$this->ExecuteQuery("
+			INSERT INTO
+				`paragraphs`
+			(`id`, `text_id`, `order`, `text`)
+			VALUES (NULL, :textid, :order, :text)
+			", array(
+				array(":textid", $textid, PDO::PARAM_INT),
+				array(":order", $paragraph->getOrder(), PDO::PARAM_INT),
+				array(":text", $paragraph->getText(), PDO::PARAM_STR)
+			)
+		);
 	}
 	
 	/**
 	 * Сохранить приложение в базу данных
 	 * 
 	 * @param string $sentence Приложение для сохранения
+	 * @param int $parid ID параграфа-родителя
+	 * @return int ID предложения
 	 * @throws Exception
 	 */
-	public function saveSentence($sentence) {
-		
+	public function saveSentence($sentence, $parid) {
+		$this->ExecuteQuery("
+			INSERT INTO
+				`sentences`
+			(`id`, `par_id`, `order`, `text`)
+			VALUES (NULL, :parid, :order, :text)
+			", array(
+				array(":parid", $parid, PDO::PARAM_INT),
+				array(":order", $sentence->getOrder(), PDO::PARAM_INT),
+				array(":text", $sentence->getText(), PDO::PARAM_STR)
+			)
+		);
 	}
 	
 	/**
 	 * Сохранить токен в базу данных
 	 * 
 	 * @param string $paragraph Токен для сохранения
+	 * @param int $senid ID предложения-родителя
+	 * @return int ID токена
 	 * @throws Exception
 	 */
-	public function saveToken($token) {
-		
+	public function saveToken($token, $senid) {
+		$this->ExecuteQuery("
+			INSERT INTO
+				`token`
+			(`id`, `sen_id`, `order`, `text`, `lemma_id`, `checked`, `method`)
+			VALUES (NULL, :senid, :order, :text, :lemma_id, :checked, :method)
+			", array(
+				array(":parid", $senid, PDO::PARAM_INT),
+				array(":order", $token->getOrder(), PDO::PARAM_INT),
+				array(":text", $token->getText(), PDO::PARAM_STR),
+				array(":lemma_id", $token->getLemmaId(), PDO::PARAM_INT),
+				array(":checked", (int) $token->isChecked(), PDO::PARAM_INT),
+				array(":method", $token->getMethod(), PDO::PARAM_INT)
+			)
+		);
 	}
 	
 //////
