@@ -9,14 +9,26 @@ namespace Tokenizer;
 class Sentence {
 	//Текст предложения
 	private $text;
-	
+	//Порядок в параграфе
+	private $order;
+	//ID параграфа
+	private $parid;
+	//ID предложения
+	private $senid;
+		
 	/**
 	 * Конструктор
 	 * 
 	 * @param string $text текст предложения
+	 * @param int $order порядок в параграфе
+	 * @param int $parid ID параграфа (необязательно)
+	 * @param int $senid ID предложения (необязательно)
 	 */
-	function __construct($text) {
+	function __construct($text, $order, $parid = 0, $senid = 0) {
     	$this->text = $text;
+		$this->order = $order;
+		$this->parid = $parid;
+		$this->senid = $senid;
    	}
 	
 	/**
@@ -124,6 +136,27 @@ class Sentence {
 	    return $result;
 	}
 	
+	/**
+	 * Сохранить предложение в базу данных
+	 * 
+	 * @param int $parid ID параграфа-родителя
+	 * @return int ID свежесохранённого предложения
+	 */
+	public function save($parid = 0) {
+		if ($this->isSaved())
+			return false;
+		
+		if ($this->parid == 0) {
+			if ($parid == 0)
+				return false;
+			
+			$this->parid = $parid;
+		}
+		
+		$dbinstance = Database::getDB();
+		return $this->senid = $dbinstance->saveSentence($this);
+	}
+	
 	////
 	// Геттеры
 	////
@@ -133,6 +166,48 @@ class Sentence {
 	 */
 	public function getText() {
 		return $this->text;
+	}
+	
+	/**
+	 * Получить порядок в тексте
+	 */
+	public function getOrder() {
+		return $this->order;
+	}
+	
+	/**
+	 * Получить ID родителя
+	 */
+	public function getParentID() {
+		return $this->parid;
+	}
+	
+	/**
+	 * Сохранён ли параграф в базу данных
+	 */
+	public function isSaved() {
+		return (bool) $this->senid;
+	}
+	
+	/**
+	 * Получить массив всех предложений параграфа
+	 * 
+	 * @return array массив предложений, либо false, если параграф не сохранён в базу данных
+	 */
+	public function getSentences() {
+		if (!$this->isSaved())
+			return false;
+		
+		$dbinstance = Database::getDB();
+		return array_map(array($this, 'initToken'), $dbinstance->getTokens($this->senid)); 
+	}
+	
+	////
+	// Колбеки
+	////
+	
+	public function initToken($token) {
+		//Not implemented yet
 	}
 }
 

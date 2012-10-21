@@ -106,6 +106,54 @@ class Database {
 		return $result;
 	}
 	
+	/**
+	 * Получить массив параграфов по ID текста
+	 * 
+	 * @param int $textid ID текста
+	 * @return array Ассоциативный массив параграфов из базы
+	 * @throws Exception
+	 */
+	public function getParagraphs($textid) {
+		$result = $this->ExecuteQuery("
+			SELECT
+				`id`, `text_id`, `order`, `text`
+			FROM `sentences`
+			WHERE `text_id` = :textid
+			", array(
+				array(":textid", $textid, PDO::PARAM_INT)
+			)
+		);
+		
+		$res = array();
+		while ($row = $result->fetch(PDO::FETCH_ASSOC))
+			array_push($res, $row);
+		return $res;
+	}
+	 
+	/**
+	 * Получить массив предложений по ID параграфа
+	 * 
+	 * @param int $parid ID параграфа
+	 * @return array Ассоциативный массив предложений из базы
+	 * @throws Exception
+	 */
+	public function getSentences($parid) {
+		$result = $this->ExecuteQuery("
+			SELECT
+				`id`, `par_id`, `order`, `text`
+			FROM `sentences`
+			WHERE `par_id` = :parid
+			", array(
+				array(":parid", $textid, PDO::PARAM_INT)
+			)
+		);
+		
+		$res = array();
+		while ($row = $result->fetch(PDO::FETCH_ASSOC))
+			array_push($res, $row);
+		return $res;
+	}
+	
 //////
 // Функции поиска
 //////
@@ -143,50 +191,56 @@ class Database {
 	 * @throws Exception
 	 */
 	public function saveText($text) {
-		$result = $this->ExecuteQuery("
-			SELECT
-				count(*) AS ccc
-			FROM `tokens`
-			WHERE `lemma_id` <> 0 AND `text` = :token
+		$this->ExecuteQuery("
+			INSERT INTO
+				`texts`
+			(`id`, `text`)
+			VALUES (NULL, :text)
 			", array(
-				array(":token", $token, PDO::PARAM_STR)
+				array(":text", $text, PDO::PARAM_STR)
 			)
 		);
+		$result = $this->ExecuteQuery("
+			SELECT last_insert_id() AS `id`
+		");
 		$result = $result->fetch(PDO::FETCH_ASSOC);
-		return (bool) $result['ccc'];
+		return $result['id'];
 	}
 	
 	/**
 	 * Сохранить параграф в базу данных
 	 * 
-	 * @param string $paragraph Параграф для сохранения
-	 * @param int $textid ID текста-родителя
+	 * @param Paragraph $paragraph Параграф для сохранения
 	 * @return int ID параграфа
 	 * @throws Exception
 	 */
-	public function saveParagraph($paragraph, $textid) {
+	public function saveParagraph($paragraph) {
 		$this->ExecuteQuery("
 			INSERT INTO
 				`paragraphs`
 			(`id`, `text_id`, `order`, `text`)
 			VALUES (NULL, :textid, :order, :text)
 			", array(
-				array(":textid", $textid, PDO::PARAM_INT),
+				array(":textid", $paragraph->getParentID(), PDO::PARAM_INT),
 				array(":order", $paragraph->getOrder(), PDO::PARAM_INT),
 				array(":text", $paragraph->getText(), PDO::PARAM_STR)
 			)
 		);
+		$result = $this->ExecuteQuery("
+			SELECT last_insert_id() AS `id`
+		");
+		$result = $result->fetch(PDO::FETCH_ASSOC);
+		return $result['id'];
 	}
 	
 	/**
 	 * Сохранить приложение в базу данных
 	 * 
-	 * @param string $sentence Приложение для сохранения
-	 * @param int $parid ID параграфа-родителя
+	 * @param Sentence $sentence Приложение для сохранения
 	 * @return int ID предложения
 	 * @throws Exception
 	 */
-	public function saveSentence($sentence, $parid) {
+	public function saveSentence($sentence) {
 		$this->ExecuteQuery("
 			INSERT INTO
 				`sentences`
@@ -198,12 +252,17 @@ class Database {
 				array(":text", $sentence->getText(), PDO::PARAM_STR)
 			)
 		);
+		$result = $this->ExecuteQuery("
+			SELECT last_insert_id() AS `id`
+		");
+		$result = $result->fetch(PDO::FETCH_ASSOC);
+		return $result['id'];
 	}
 	
 	/**
 	 * Сохранить токен в базу данных
 	 * 
-	 * @param string $paragraph Токен для сохранения
+	 * @param Token $paragraph Токен для сохранения
 	 * @param int $senid ID предложения-родителя
 	 * @return int ID токена
 	 * @throws Exception
@@ -223,6 +282,11 @@ class Database {
 				array(":method", $token->getMethod(), PDO::PARAM_INT)
 			)
 		);
+		$result = $this->ExecuteQuery("
+			SELECT last_insert_id() AS `id`
+		");
+		$result = $result->fetch(PDO::FETCH_ASSOC);
+		return $result['id'];
 	}
 	
 //////
@@ -237,7 +301,7 @@ class Database {
 	 * @return PDOStatement Объект запроса в базу
 	 * @throws PDOException
 	 */
-	private function ExecuteQuery($query, $params) {
+	private function ExecuteQuery($query, $params = array()) {
 		$dbo = $this->db->prepare($query);
 		foreach($params as $param) {
 			$dbo->bindValue($param[0], $param[1], $param[2]);

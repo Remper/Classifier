@@ -34,7 +34,7 @@ class Tokenizer {
     	$this->token_prefixes = file($settings['token']['prefixes'], FILE_IGNORE_NEW_LINES);
 		$this->dbsettings = $settings['database'];
 		//Получаем инстанс базы данных
-		$this->db = Tokenizer\Database::getDB();
+		$this->db = Database::getDB();
 		$this->db->connect($this->dbsettings["login"], $this->dbsettings["pass"], $this->dbsettings["db"]);
    	}
 	
