@@ -46,12 +46,12 @@ class Database {
 		
 		try {
 			//Инициализируем объект базы данных
-			$this->conn = new PDO($this->db,  $this->user, $this->pass);
-			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$this->conn = new \PDO($this->db,  $this->user, $this->pass);
+			$this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 			//Устанавливаем дефолтную кодировку
-			$sth = $this->db->query('SET NAMES utf8');
-		} catch (PDOException $e) {
-			throw new Exception("Невозможно подключиться к базе данных");
+			$sth = $this->conn->query('SET NAMES utf8');
+		} catch (\PDOException $e) {
+			throw new \Exception("Невозможно подключиться к базе данных");
 		}
 	}
 	
@@ -62,8 +62,8 @@ class Database {
 	 */
 	public function isConnected() {
 		try {
-			$sth = $this->db->query('SHOW TABLES');
-		} catch (PDOException $e) {
+			$sth = $this->conn->query('SHOW TABLES');
+		} catch (\PDOException $e) {
 			return false;
 		}
 	}
@@ -102,7 +102,7 @@ class Database {
 		");
 		
 		$res = array();
-		while ($row = $result->fetch(PDO::FETCH_ASSOC))
+		while ($row = $result->fetch(\PDO::FETCH_ASSOC))
 			array_push($res, $row);
 		return $res;
 	}
@@ -121,12 +121,12 @@ class Database {
 			FROM `sentences`
 			WHERE `text_id` = :textid
 			", array(
-				array(":textid", $textid, PDO::PARAM_INT)
+				array(":textid", $textid, \PDO::PARAM_INT)
 			)
 		);
 		
 		$res = array();
-		while ($row = $result->fetch(PDO::FETCH_ASSOC))
+		while ($row = $result->fetch(\PDO::FETCH_ASSOC))
 			array_push($res, $row);
 		return $res;
 	}
@@ -145,12 +145,12 @@ class Database {
 			FROM `sentences`
 			WHERE `par_id` = :parid
 			", array(
-				array(":parid", $textid, PDO::PARAM_INT)
+				array(":parid", $textid, \PDO::PARAM_INT)
 			)
 		);
 		
 		$res = array();
-		while ($row = $result->fetch(PDO::FETCH_ASSOC))
+		while ($row = $result->fetch(\PDO::FETCH_ASSOC))
 			array_push($res, $row);
 		return $res;
 	}
@@ -173,10 +173,10 @@ class Database {
 			FROM `tokens`
 			WHERE `lemma_id` <> 0 AND `text` = :token
 			", array(
-				array(":token", $token, PDO::PARAM_STR)
+				array(":token", $token, \PDO::PARAM_STR)
 			)
 		);
-		$result = $result->fetch(PDO::FETCH_ASSOC);
+		$result = $result->fetch(\PDO::FETCH_ASSOC);
 		return (bool) $result['ccc'];
 	}
 	
@@ -198,13 +198,13 @@ class Database {
 			(`id`, `text`)
 			VALUES (NULL, :text)
 			", array(
-				array(":text", $text, PDO::PARAM_STR)
+				array(":text", $text, \PDO::PARAM_STR)
 			)
 		);
 		$result = $this->ExecuteQuery("
 			SELECT last_insert_id() AS `id`
 		");
-		$result = $result->fetch(PDO::FETCH_ASSOC);
+		$result = $result->fetch(\PDO::FETCH_ASSOC);
 		return $result['id'];
 	}
 	
@@ -222,15 +222,15 @@ class Database {
 			(`id`, `text_id`, `order`, `text`)
 			VALUES (NULL, :textid, :order, :text)
 			", array(
-				array(":textid", $paragraph->getParentID(), PDO::PARAM_INT),
-				array(":order", $paragraph->getOrder(), PDO::PARAM_INT),
-				array(":text", $paragraph->getText(), PDO::PARAM_STR)
+				array(":textid", $paragraph->getParentID(), \PDO::PARAM_INT),
+				array(":order", $paragraph->getOrder(), \PDO::PARAM_INT),
+				array(":text", $paragraph->getText(), \PDO::PARAM_STR)
 			)
 		);
 		$result = $this->ExecuteQuery("
 			SELECT last_insert_id() AS `id`
 		");
-		$result = $result->fetch(PDO::FETCH_ASSOC);
+		$result = $result->fetch(\PDO::FETCH_ASSOC);
 		return $result['id'];
 	}
 	
@@ -248,15 +248,15 @@ class Database {
 			(`id`, `par_id`, `order`, `text`)
 			VALUES (NULL, :parid, :order, :text)
 			", array(
-				array(":parid", $parid, PDO::PARAM_INT),
-				array(":order", $sentence->getOrder(), PDO::PARAM_INT),
-				array(":text", $sentence->getText(), PDO::PARAM_STR)
+				array(":parid", $parid, \PDO::PARAM_INT),
+				array(":order", $sentence->getOrder(), \PDO::PARAM_INT),
+				array(":text", $sentence->getText(), \PDO::PARAM_STR)
 			)
 		);
 		$result = $this->ExecuteQuery("
 			SELECT last_insert_id() AS `id`
 		");
-		$result = $result->fetch(PDO::FETCH_ASSOC);
+		$result = $result->fetch(\PDO::FETCH_ASSOC);
 		return $result['id'];
 	}
 	
@@ -275,18 +275,18 @@ class Database {
 			(`id`, `sen_id`, `order`, `text`, `lemma_id`, `checked`, `method`)
 			VALUES (NULL, :senid, :order, :text, :lemma_id, :checked, :method)
 			", array(
-				array(":parid", $senid, PDO::PARAM_INT),
-				array(":order", $token->getOrder(), PDO::PARAM_INT),
-				array(":text", $token->getText(), PDO::PARAM_STR),
-				array(":lemma_id", $token->getLemmaId(), PDO::PARAM_INT),
-				array(":checked", (int) $token->isChecked(), PDO::PARAM_INT),
-				array(":method", $token->getMethod(), PDO::PARAM_INT)
+				array(":parid", $senid, \PDO::PARAM_INT),
+				array(":order", $token->getOrder(), \PDO::PARAM_INT),
+				array(":text", $token->getText(), \PDO::PARAM_STR),
+				array(":lemma_id", $token->getLemmaId(), \PDO::PARAM_INT),
+				array(":checked", (int) $token->isChecked(), \PDO::PARAM_INT),
+				array(":method", $token->getMethod(), \PDO::PARAM_INT)
 			)
 		);
 		$result = $this->ExecuteQuery("
 			SELECT last_insert_id() AS `id`
 		");
-		$result = $result->fetch(PDO::FETCH_ASSOC);
+		$result = $result->fetch(\PDO::FETCH_ASSOC);
 		return $result['id'];
 	}
 	
@@ -303,7 +303,7 @@ class Database {
 	 * @throws PDOException
 	 */
 	private function ExecuteQuery($query, $params = array()) {
-		$dbo = $this->db->prepare($query);
+		$dbo = $this->conn->prepare($query);
 		foreach($params as $param) {
 			$dbo->bindValue($param[0], $param[1], $param[2]);
 		}

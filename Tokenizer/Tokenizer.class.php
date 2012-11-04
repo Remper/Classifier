@@ -30,8 +30,8 @@ class Tokenizer {
 	 */
 	function __construct($settings) {
 		//Инициализируем настройки
-    	$this->token_exceptions = array_map('mb_strtolower', file($settings['token']['exceptions'], FILE_IGNORE_NEW_LINES));
-    	$this->token_prefixes = file($settings['token']['prefixes'], FILE_IGNORE_NEW_LINES);
+    	$this->token_exceptions = array_map('mb_strtolower', file(apath($settings['token']['exceptions']), FILE_IGNORE_NEW_LINES));
+    	$this->token_prefixes = file(apath($settings['token']['prefixes']), FILE_IGNORE_NEW_LINES);
 		$this->dbsettings = $settings['database'];
 		//Получаем инстанс базы данных
 		$this->db = Database::getDB();

@@ -1,6 +1,7 @@
 <?php
-//Файл-обёртка для различных нужд
+//Файл-обёртка для токенайзера
 require("Tokenizer.class.php");
+require("Entity.class.php");
 require("Classificator.class.php");
 require("Paragraph.class.php");
 require("Sentence.class.php");
