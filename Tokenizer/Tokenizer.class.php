@@ -53,9 +53,6 @@ class Tokenizer {
 		$sentences = array_map(array($this, 'splitParagraph'), $paragraphs);
 		//Разбиваем предложения на токены
 		$tokens = array_map(array($this, 'splitSentence'), $sentences);
-		
-		//Сохраняем текст в базу данных
-		$this->save($text, $paragraphs, $sentences, $tokens);
 	}
 	
 	
@@ -126,11 +123,24 @@ class Tokenizer {
 	// Колбеки
 	/////
 	public function splitParagraph($paragraph) {
-		return $paragraph->split();
+		//Разбиваем параграф на предложения
+		$sentences = $paragraph->split();
+		//Сохраняем предложения в базу данных
+		foreach($sentences as $sentence) {
+			$id = $sentence->save();
+			
+		}
+		
+		return $sentences;
 	}
 	
 	public function splitSentence($sentence) {
-		return $sentence->split($this->token_exceptions, $this->token_prefixes);
+		//Разбиваем предложение на токены
+		$tokens = $sentence->split($this->token_exceptions, $this->token_prefixes);
+		foreach($tokens as $token)
+			$token->save();
+		
+		return $tokens;
 	}
 }
 

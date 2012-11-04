@@ -6,8 +6,9 @@ namespace Tokenizer;
  * Сущность
  * @author Ярослав Нечаев <mail@remper.ru>
  */
-class Entity {
-	
+abstract class Entity {
+	abstract public function save();
+//	abstract public function split();
 }
  
 ?>
