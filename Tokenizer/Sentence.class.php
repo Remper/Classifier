@@ -6,7 +6,7 @@ namespace Tokenizer;
  * Класс-сущность предложение
  * @author Ярослав Нечаев <mail@remper.ru>
  */
-class Sentence {
+class Sentence extends Entity {
 	//Текст предложения
 	private $text;
 	//Порядок в параграфе

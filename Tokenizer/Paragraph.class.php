@@ -6,7 +6,7 @@ namespace Tokenizer;
  * Класс-сущность параграф
  * @author Ярослав Нечаев <mail@remper.ru>
  */
-class Paragraph {
+class Paragraph extends Entity {
 	//Текст параграфа
 	private $text;
 	//Порядок в тексте

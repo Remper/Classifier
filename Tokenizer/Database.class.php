@@ -100,10 +100,11 @@ class Database {
 				`vector`, `coeff`
 			FROM `coeffs`
 		");
-		if (!($result = $result->fetch(PDO::FETCH_ASSOC)))
-			throw new Exception("Can't work without data");
 		
-		return $result;
+		$res = array();
+		while ($row = $result->fetch(PDO::FETCH_ASSOC))
+			array_push($res, $row);
+		return $res;
 	}
 	
 	/**
