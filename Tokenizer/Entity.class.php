@@ -13,7 +13,7 @@ abstract class Entity {
 	abstract public function save();
 
 	/**
-	 * Получить текст параграфа
+	 * Получить текст
 	 */
 	public function getText() {
 		return $this->text;
@@ -30,6 +30,7 @@ abstract class Entity {
 interface TRPiece {
 	public function getOrder();
 	public function getParentId();
+	public function setParentId($id);
 }
 
 interface TRWhole {

@@ -45,102 +45,36 @@ class Tokenizer {
 	 * @return bool статус токенизации
 	 */
 	public function tokenizeText($text) {
-		//Чистим текст
-		$text = $this->filterText($text);
-		//Разбиваем текст на параграфы
-		$paragraphs = $this->splitText($text);
-		//Разбиваем параграфы на предложения
-		$sentences = array_map(array($this, 'splitParagraph'), $paragraphs);
-		//Разбиваем предложения на токены
-		$tokens = array_map(array($this, 'splitSentence'), $sentences);
-	}
-	
-	
-	/**
-	 * Очистить текст от плохих символов
-	 * 
-	 * @param string $text текст для очистки
-	 * @return string очищенный текст
-	 */
-	private function filterText($text) {
-		//Запрещённые символы
-		$forbid = array(769, //модификатор диакритических символов
-			173, //символ возможного переноса
-			8192, 8193, 8194, 8195, 8196, 8197, 8198, 8199, 8200, 8201, 8202, 8203, 8237, 8239, 8288, 12288 //Пробелы/символы работы с кареткой
-		);
-		//Пробегаемся по всему тексту и фильтруем плохие символы
-		$result = "";
-	    for ($i = 0; $i < mb_strlen($text, 'UTF-8'); ++$i) {
-	        $char = mb_substr($text, $i, 1, 'UTF-8');
-	        if (!in_array(uniord($char), $forbid)) 
-	        	$result .= $char;
-	    }
-		
-		return $result;
-	}
-	
-	/**
-	 * Разбить текст на параграфы
-	 * 
-	 * @param string $text текст
-	 * @return array Параграфы
-	 */
-	private function splitText($text) {
-		//Разбиваем по двойному переносу строки
-		$splitText = preg_split('/\r?\n\r?\n\r?/', $text);
-		//Фильтруем пустые параграфы и возвращаем параграфы
-		$result = array();
-		foreach ($splitText as $paragraph)
-			if (preg_match('/\S/', $paragraph))
-				array_push($result, new Tokenizer\Paragraph($paragraph));
-			
-		return $result;
-	}
-	
-	/**
-	 * Сохранить размеченный текст в базу данных
-	 * 
-	 * @param string $text
-	 * @param string $paragraphs
-	 * @param string $sentences
-	 * @param string $tokens
-	 * @return bool Результат сохранения
-	 */
-	private function save($text, $paragraphs, $sentences, $tokens) {
-		try {
-			$this->db->reconnect();
-			$id = $this->db->saveText($text);
-			//$paragraphs->save($id);
-			//$sentences->save($id);
-			//$tokens->save($id);
-			return true;
-		} catch (Exception $e) {
+		$text = new Text($text);
+		if (!$text->save())
 			return false;
-		}
-	}
-	
-	/////
-	// Колбеки
-	/////
-	public function splitParagraph($paragraph) {
-		//Разбиваем параграф на предложения
-		$sentences = $paragraph->split();
-		//Сохраняем предложения в базу данных
-		foreach($sentences as $sentence) {
-			$id = $sentence->save();
-			
+		//Разбиваем текст на параграфы
+		$paragraphs = $text->split();
+		//Сохраняем параграфы в базу данных, разбиваем параграфы на предложения
+		$sentences = array();
+		foreach ($paragraphs as $paragraph) {
+			try {
+				$paragraph->save();
+				array_merge($sentences, $paragraph->split());
+			} catch (Exception $e) {
+				//Обработка ошибки сохранения
+			}
 		}
 		
-		return $sentences;
-	}
-	
-	public function splitSentence($sentence) {
-		//Разбиваем предложение на токены
-		$tokens = $sentence->split($this->token_exceptions, $this->token_prefixes);
-		foreach($tokens as $token)
-			$token->save();
+		//Сохраняем предложения в базу данных, разбиваем предложения на токены
+		$tokens = array();
+		foreach ($sentences as $sentence) {
+			try {
+				$sentence->save();
+				array_merge($tokens, $sentence->split());
+			} catch (Exception $e) {
+				//Обработка ошибки сохранения
+			}
+		}
 		
-		return $tokens;
+		//Сохраняем токены
+		foreach ($tokens as $token)
+			$token->save(); //Здесь нам пока пофиг на ошибку, потому что не создаётся сирот
 	}
 }
 

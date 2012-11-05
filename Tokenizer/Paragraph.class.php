@@ -6,15 +6,11 @@ namespace Tokenizer;
  * Класс-сущность параграф
  * @author Ярослав Нечаев <mail@remper.ru>
  */
-class Paragraph extends Entity {
-	//Текст параграфа
-	private $text;
+class Paragraph extends Entity implements TRPiece, TRWhole {
 	//Порядок в тексте
 	private $order;
-	//ID текста
+	//ID родителя-текста
 	private $textid;
-	//ID параграфа
-	private $parid;
 	
 	/**
 	 * Конструктор
@@ -27,8 +23,8 @@ class Paragraph extends Entity {
 	function __construct($text, $order, $textid = 0, $parid = 0) {
     	$this->text = $text;
 		$this->order = $order;
+		$this->id = $parid;
 		$this->textid = $textid;
-		$this->parid = $parid;
    	}
 	
 	/**
@@ -90,8 +86,18 @@ class Paragraph extends Entity {
 	/**
 	 * Получить ID родителя
 	 */
-	public function getParentID() {
+	public function getParentId() {
 		return $this->textid;
+	}
+	
+	/**
+	 * Назначить родителя
+	 */
+	public function setParentId($textid) {
+		if ($this->isSaved() && $this->textid)
+			return false;
+		
+		$this->textid = $textid;
 	}
 	
 	/**
