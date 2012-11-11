@@ -289,6 +289,33 @@ class Database {
 		$result = $result->fetch(\PDO::FETCH_ASSOC);
 		return $result['id'];
 	}
+
+//////
+// Функции для заполнения базы данных
+//////
+	
+	/**
+	 * Добавить лемму в базу данных
+	 * 
+	 * @param int $id ID леммы
+	 * @param int $formid ID словоформы в лемме
+	 * @param string $name Имя леммы
+	 * @param string $grammems Сериализованный в JSON массив граммем
+	 */
+	public function addLemma($id, $formid, $text, $grammems) {
+		
+	}
+	
+	/**
+	 * Добавить граммему в базу данных
+	 * 
+	 * @param int $id ID граммемы
+	 * @param int $parentid ID родителя граммемы
+	 * @param string $name Имя граммемы
+	 */
+	public function addGrammema($id, $parentid, $name) {
+		
+	}
 	
 //////
 // Служебная фигня
