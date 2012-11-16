@@ -41,7 +41,9 @@ $lcount = 0;
 $fcount = 0;
 while ($xml->next())
 	if ($xml->nodeType == XMLReader::ELEMENT) {
-		if ($xml->name != "lemma" || $lcount == 100000)
+		if ($lcount % 100000 == 0)
+			set_time_limit(30);
+		if ($xml->name != "lemma")
 			break;
 		$lcount++;
 		//Парсим лемму
