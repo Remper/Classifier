@@ -12,6 +12,7 @@
  */
  
 require("../Tokenizer/Database.class.php");
+require("../helpers/Log.class.php");
 
 //Замеряем начальное время
 $start_time = microtime(true);
@@ -22,6 +23,9 @@ $settings = parse_ini_file("../settings.ini", true);
 //Создать инстанс базы данных и подключиться
 $db = \Tokenizer\Database::getDB();
 $db->connect($settings['database']['login'], $settings['database']['pass'], $settings['database']['db']);
+
+//Открыть лог
+$log = new \Log(\LogType::IMPORT, ".." . $settings['log']['dir']);
 
 //Открываем документ
 $xml = new XMLReader();
@@ -41,8 +45,11 @@ $lcount = 0;
 $fcount = 0;
 while ($xml->next())
 	if ($xml->nodeType == XMLReader::ELEMENT) {
-		if ($lcount % 100000 == 0)
+		if ($lcount % 10000 == 0) {
 			set_time_limit(30);
+			if ($lcount != 0)
+				$log->writeLog("Written 10k, Form count: " . $fcount);
+		}
 		if ($xml->name != "lemma")
 			break;
 		$lcount++;
@@ -81,8 +88,11 @@ while ($xml->next())
 
 //Выводим статистику
 echo "Lemma count: " . $lcount;
+$log->writeLog("Lemma count: " . $lcount);
 echo "<br />Form count: " . $fcount;
+$log->writeLog("Form count: " . $fcount);
 echo "<br />Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds";
+$log->writeLog("Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds");
 ?>
 	</body>
 </html>

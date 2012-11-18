@@ -303,7 +303,19 @@ class Database {
 	 * @param string $grammems Сериализованный в JSON массив граммем
 	 */
 	public function addLemma($id, $formid, $text, $grammems) {
-		
+		$this->ExecuteQuery("
+			INSERT INTO
+				`lemmas`
+			(`lemmid`, `formid`, `text`, `grammems`)
+			VALUES (:lemmid, :formid, :text, :grammems)
+			", array(
+				array(":lemmid", $id, \PDO::PARAM_INT),
+				array(":formid", $formid, \PDO::PARAM_INT),
+				array(":text", $text, \PDO::PARAM_STR),
+				array(":grammems", $grammems, \PDO::PARAM_STR)
+			)
+		);
+		return true;
 	}
 	
 	/**
