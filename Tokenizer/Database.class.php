@@ -22,7 +22,7 @@ class Database {
 	/**
 	 * Вернуть экземпляр класса
 	 * 
-	 * @return Singleton
+	 * @return Database
 	 */
     public static function getDB() {
         if ( is_null(self::$instance) ) {
@@ -154,6 +154,25 @@ class Database {
 			array_push($res, $row);
 		return $res;
 	}
+
+    /**
+     * Найти все граммемы с заданным parent ID
+     *
+     * @param int $parent parent ID
+     */
+    public function findGrammemsByParent($parent = 0) {
+        $result = $this->ExecuteQuery("
+            SELECT * FROM `grammems`
+            WHERE `parentid` = :parent
+        ", array(
+            array(":parentid", $parent, \PDO::PARAM_INT)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::PARAM_INT))
+            array_push($res, new Grammem($row["id"], $parent, $row["name"]));
+        return $res;
+    }
 	
 //////
 // Функции поиска
@@ -325,8 +344,22 @@ class Database {
 	 * @param int $parentid ID родителя граммемы
 	 * @param string $name Имя граммемы
 	 */
-	public function addGrammema($id, $parentid, $name) {
-		
+	public function addGrammem($parentid, $name) {
+		$this->ExecuteQuery("
+		    INSERT INTO
+		        `grammems`
+		    (`parentid`, `name`)
+		    VALUES (:parentid, :name)
+		    ", array(
+                array(":parentid", $parentid, \PDO::PARAM_INT),
+                array(":name", $name, \PDO::PARAM_STR)
+            )
+        );
+        $result = $this->ExecuteQuery("
+            SELECT last_insert_id() AS `id`
+        ");
+        $result = $result->fetch(\PDO::FETCH_ASSOC);
+        return $result['id'];
 	}
 	
 //////
