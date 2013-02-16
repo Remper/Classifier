@@ -30,6 +30,7 @@ $log = new \Log(\LogType::IMPORT, ".." . $settings['log']['dir']);
 //Открываем документ
 $xml = new XMLReader();
 $xml->open("../dict.opcorpora.xml", "utf-8");
+$log->writeLog("XML Opened successfully, parsing started");
 
 //Перемещаемся на уровень лемм
 $xml->read(); $xml->read();
@@ -48,7 +49,7 @@ while ($xml->next())
 		if ($lcount % 10000 == 0) {
 			set_time_limit(30);
 			if ($lcount != 0)
-				$log->writeLog("Written 10k, Form count: " . $fcount);
+				$log->writeLog("Parsed 10k, Form count: " . $fcount);
 		}
 		if ($xml->name != "lemma")
 			break;

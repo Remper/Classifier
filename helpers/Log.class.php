@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Класс для ведения логов
+ * @author Ярослав Нечаев <mail@remper.ru>
+ */
 class Log {
 	//Хендлер файла
 	private $handler;
@@ -16,6 +20,9 @@ class Log {
 			case LogType::IMPORT:
 				$filename.= "import";
 			break;
+            case LogType::CORPUS:
+                $filename.= "corpus";
+            break;
 			default:
 			case LogType::TOKENIZER:
 				$filename.= "tokenize";
@@ -42,4 +49,5 @@ class Log {
 class LogType {
 	const IMPORT = 1;
 	const TOKENIZER = 2;
+    const CORPUS = 3;
 }
