@@ -7,9 +7,8 @@ namespace Tokenizer;
  *
  * @author Ярослав Нечаев <mail@remper.ru>
  */
-class Grammem
-{
-    public const BASIC_GRAMMEM = 1;
+class Grammem {
+    const BASIC_GRAMMEM = 1;
 
     protected $id;
     protected $parent;

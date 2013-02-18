@@ -155,7 +155,17 @@ class Sentence extends Entity {
 	////
 	// Геттеры
 	////
-	
+
+    /**
+     * Получить ID предложения
+     *
+     * @return int
+     */
+    public function getSenid()
+    {
+        return $this->senid;
+    }
+
 	/**
 	 * Получить текст предложения
 	 */

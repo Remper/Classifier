@@ -267,7 +267,7 @@ class Database {
 			(`id`, `par_id`, `order`, `text`)
 			VALUES (NULL, :parid, :order, :text)
 			", array(
-				array(":parid", $parid, \PDO::PARAM_INT),
+				array(":parid", $sentence->getParentID(), \PDO::PARAM_INT),
 				array(":order", $sentence->getOrder(), \PDO::PARAM_INT),
 				array(":text", $sentence->getText(), \PDO::PARAM_STR)
 			)
@@ -282,22 +282,22 @@ class Database {
 	/**
 	 * Сохранить токен в базу данных
 	 * 
-	 * @param Token $paragraph Токен для сохранения
-	 * @param int $senid ID предложения-родителя
+	 * @param Token $token Токен для сохранения
 	 * @return int ID токена
 	 * @throws Exception
 	 */
-	public function saveToken($token, $senid) {
+	public function saveToken($token) {
 		$this->ExecuteQuery("
 			INSERT INTO
-				`token`
-			(`id`, `sen_id`, `order`, `text`, `lemma_id`, `checked`, `method`)
-			VALUES (NULL, :senid, :order, :text, :lemma_id, :checked, :method)
+				`tokens`
+			(`id`, `sen_id`, `order`, `text`, `lemma_id`, `form_id`, `checked`, `method`)
+			VALUES (NULL, :senid, :order, :text, :lemma_id, :form_id, :checked, :method)
 			", array(
-				array(":parid", $senid, \PDO::PARAM_INT),
+				array(":senid", $token->getParentId(), \PDO::PARAM_INT),
 				array(":order", $token->getOrder(), \PDO::PARAM_INT),
 				array(":text", $token->getText(), \PDO::PARAM_STR),
 				array(":lemma_id", $token->getLemmaId(), \PDO::PARAM_INT),
+                array(":form_id", $token->getFormId(), \PDO::PARAM_INT),
 				array(":checked", (int) $token->isChecked(), \PDO::PARAM_INT),
 				array(":method", $token->getMethod(), \PDO::PARAM_INT)
 			)

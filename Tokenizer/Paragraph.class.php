@@ -11,6 +11,8 @@ class Paragraph extends Entity implements TRPiece, TRWhole {
 	private $order;
 	//ID родителя-текста
 	private $textid;
+    //ID параграфа
+    private $parid;
 	
 	/**
 	 * Конструктор
@@ -23,7 +25,7 @@ class Paragraph extends Entity implements TRPiece, TRWhole {
 	function __construct($text, $order, $textid = 0, $parid = 0) {
     	$this->text = $text;
 		$this->order = $order;
-		$this->id = $parid;
+		$this->parid = $parid;
 		$this->textid = $textid;
    	}
 	
@@ -68,7 +70,17 @@ class Paragraph extends Entity implements TRPiece, TRWhole {
 	////
 	// Геттеры
 	////
-	
+
+    /**
+     * Получить ID параграфа
+     *
+     * @return int
+     */
+    public function getParid()
+    {
+        return $this->parid;
+    }
+
 	/**
 	 * Получить текст параграфа
 	 */
@@ -127,6 +139,11 @@ class Paragraph extends Entity implements TRPiece, TRWhole {
 	public function initSentence($sentence) {
 		return new Sentence($sentence['text'], $sentence['order'], $sentence['par_id'], $sentence['id']);
 	}
+
+    public function getPieces()
+    {
+        // TODO: Implement getPieces() method.
+    }
 }
 
 ?>
