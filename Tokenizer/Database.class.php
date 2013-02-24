@@ -51,6 +51,7 @@ class Database {
 			//Устанавливаем дефолтную кодировку
 			$sth = $this->conn->query('SET NAMES utf8');
 		} catch (\PDOException $e) {
+            var_dump($e);
 			throw new \Exception("Невозможно подключиться к базе данных");
 		}
 	}
@@ -76,7 +77,7 @@ class Database {
 	 */
 	public function reconnect() {
 		if (!$this->isConnected()) {
-			if ($user === '')
+			if ($this->user === '')
 				return false;
 			
 			$this->connect($this->user, $this->pass, $this->db);
@@ -145,7 +146,7 @@ class Database {
 			FROM `sentences`
 			WHERE `par_id` = :parid
 			", array(
-				array(":parid", $textid, \PDO::PARAM_INT)
+				array(":parid", $parid, \PDO::PARAM_INT)
 			)
 		);
 		
@@ -154,6 +155,29 @@ class Database {
 			array_push($res, $row);
 		return $res;
 	}
+
+    /**
+     * Получить все предложения
+     *
+     * @param $start С какого предложения возвращать результат
+     * @param $limit Максимальное количество результатов
+     * @return array Массив результатов
+     */
+    public function getAllSentences($start = 0, $limit = 1000) {
+        $result = $this->ExecuteQuery("
+            SELECT `id`, `par_id`, `order`, `text`
+            FROM `sentences`
+            LIMIT :start, :limit
+        ", array(
+            array(":start", $start, \PDO::PARAM_INT),
+            array(":limit", $limit, \PDO::PARAM_INT)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC))
+            array_push($res, $row);
+        return $res;
+    }
 
     /**
      * Найти все граммемы с заданным parent ID
@@ -169,16 +193,39 @@ class Database {
         ));
 
         $res = array();
-        while ($row = $result->fetch(\PDO::PARAM_INT))
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC))
             array_push($res, new Grammem($row["id"], $parent, $row["name"]));
         return $res;
     }
-	
+
+    /**
+     * Найти форму леммы с заданным текстом
+     *
+     * @param int $lemmid ID леммы
+     * @param string $text Текст
+     * @return int ID формы
+     */
+    public function findFormOfLemma($lemmid, $text) {
+        if ($lemmid == 0)
+            return 0;
+
+        $result = $this->ExecuteQuery("
+            SELECT `formid` FROM `lemmas`
+            WHERE `lemmid` = :lemmid AND `text` = :text
+        ", array(
+            array(":lemmid", $lemmid, \PDO::PARAM_INT),
+            array(":text", $text, \PDO::PARAM_STR)
+        ));
+
+        $row = $result->fetch(\PDO::FETCH_ASSOC);
+        return $row["formid"];
+    }
+
 //////
 // Функции поиска
 //////
-	
-	/**
+
+    /**
 	 * Существует ли заданный токен в базе
 	 * 
 	 * @param string $token Токен
@@ -361,6 +408,27 @@ class Database {
         $result = $result->fetch(\PDO::FETCH_ASSOC);
         return $result['id'];
 	}
+
+    /**
+     * Добавить сырые данные в базу данных
+     *
+     * @param integer $sen_id ID предложения
+     * @param string $data Данные
+     * @return bool Результат
+     */
+    public function addRawData($sen_id, $data) {
+        $this->ExecuteQuery("
+		    INSERT INTO
+		        `raw_signature`
+		    (`sen_id`, `data`)
+		    VALUES (:senid, :data)
+		    ", array(
+                array(":senid", $sen_id, \PDO::PARAM_INT),
+                array(":data", $data, \PDO::PARAM_STR)
+            )
+        );
+        return true;
+    }
 	
 //////
 // Служебная фигня

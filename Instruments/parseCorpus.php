@@ -90,14 +90,13 @@ while ($xml->nodeType != 0)
                                     break;
                                 //Внутренности token
                                 $curtoken = array(
-                                    "text" => "",
+                                    "text" => $xml->getAttribute("text"),
                                     "id" => count($cursent["tokens"]),
                                     "grammems" => array(),
                                     "lemma_id" => null
                                 );
                                 $xml->read(); $xml->read(); $xml->read();
                                 $curtoken["lemma_id"] = $xml->getAttribute("id");
-                                $curtoken["text"] = $xml->getAttribute("t");
 
                                 $xml->read();
                                 while ($xml->nodeType != 0) {
@@ -145,14 +144,15 @@ while ($xml->nodeType != 0)
                 $realsent->save();
 
                 foreach ($sent['tokens'] as $tok) {
-                    $realtok = new \Tokenizer\Token($tok["text"], $realsent->getSenid(), $tok["id"], $tok["lemma_id"]);
+                    $formid = $dbinstance->findFormOfLemma($tok["lemma_id"], $tok["text"]);
+                    $realtok = new \Tokenizer\Token($tok["text"], $realsent->getSenid(), $tok["id"], $tok["lemma_id"], $formid);
                     $realtok->save();
                 }
             }
         }
 
         $texts++;
-        if ($texts % 500 == 0) {
+        if ($texts % 100 == 0) {
             $log->writeLog($texts . " texts parsed");
             echo $texts . " texts parsed\n";
         }

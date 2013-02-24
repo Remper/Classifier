@@ -15,7 +15,7 @@ class Log {
 	 * @param string $filedir Папка с логами
 	 */
 	function __construct($type, $filedir) {
-		$filename = $filedir . date("d.m.y-h.i-");
+		$filename = $filedir . date("Y-m-d-h.i-");
 		switch ($type) {
 			case LogType::IMPORT:
 				$filename.= "import";
