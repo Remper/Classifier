@@ -15,7 +15,7 @@ class Log {
 	 * @param string $filedir Папка с логами
 	 */
 	function __construct($type, $filedir) {
-		$filename = $filedir . date("Y-m-d-h.i-");
+		$filename = $filedir . date("Y-m-d-H.i-");
 		switch ($type) {
 			case LogType::IMPORT:
 				$filename.= "import";
@@ -37,7 +37,7 @@ class Log {
 	 * @param string $message
 	 */
 	public function writeLog($message) {
-		$message = date("[h:i:s] ") . $message . "\n";
+		$message = date("[H:i:s] ") . $message . "\n";
 		fwrite($this->handler, $message);
 	}
 	
