@@ -37,5 +37,18 @@ class Learner
         }
     }
 
+    public function setLearner($learner)
+    {
+        $this->learner = $learner;
+    }
 
+    public function getLearner()
+    {
+        return $this->learner;
+    }
+
+    public function getMethod()
+    {
+        return $this->method;
+    }
 }

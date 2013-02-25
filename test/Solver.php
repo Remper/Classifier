@@ -1,11 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>ML-тест</title>
-    <meta name="author" content="Yaroslav Nechaev" />
-</head>
-<body>
 <?php
 
 include("../bootstrap.php");
@@ -20,6 +12,3 @@ $test = $sen->split(array(), array());
 $config = parse_ini_file("../settings.ini", true);
 $tokenizer = new Tokenizer\Tokenizer($config);
 
-?>
-</body>
-</html>
