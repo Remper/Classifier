@@ -35,14 +35,17 @@ class Paragraph extends Entity implements TRPiece, TRWhole {
 	 * @return array список предложений
 	 */
 	public function split() {
-		//Разбиваем по переносу строки
-		$splitText = preg_split('/[\r\n]+/', $this->text);
+		//Разбиваем по точке, переносов строк быть не должно
+		$splitText = preg_split('/\. +/', $this->text);
+        $splitText = preg_replace('/(\n)|(\r)|(\.)/', '', $splitText);
 		//Фильтруем пустые предложения и возвращаем результат
-		$result = array();
-		foreach ($splitText as $paragraph)
-			if (preg_match('/\S/', $paragraph))
-				array_push($result, new Sentence($paragraph));
-			
+        $result = array();
+		foreach ($splitText as $paragraph) {
+			if (preg_match('/\S/', $paragraph)) {
+                $paragraph = preg_replace('/ +/', ' ', $paragraph);
+				array_push($result, new Sentence($paragraph, count($result), $this->parid));
+            }
+        }
 		return $result;
 	}
 	

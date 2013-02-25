@@ -253,7 +253,7 @@ class Database {
 	/**
 	 * Сохранить текст в базу данных
 	 * 
-	 * @param string $text текст для сохранения
+	 * @param Text $text текст для сохранения
 	 * @return int ID текста
 	 * @throws Exception
 	 */
@@ -261,10 +261,12 @@ class Database {
 		$this->ExecuteQuery("
 			INSERT INTO
 				`texts`
-			(`id`, `text`)
-			VALUES (NULL, :text)
+			(`id`, `text`, `opinion`, `wordcount`)
+			VALUES (NULL, :text, :opinion, :wordcount)
 			", array(
-				array(":text", $text, \PDO::PARAM_STR)
+				array(":text", $text->getText(), \PDO::PARAM_STR),
+                array(":opinion", $text->getOpinion(), \PDO::PARAM_INT),
+                array(":wordcount", $text->getWordcount(), \PDO::PARAM_INT)
 			)
 		);
 		$result = $this->ExecuteQuery("
@@ -439,8 +441,8 @@ class Database {
 	 * 
 	 * @param string $query Запрос к базе
 	 * @param array $params Параметры запроса
-	 * @return PDOStatement Объект запроса в базу
-	 * @throws PDOException
+	 * @return \PDOStatement Объект запроса в базу
+	 * @throws \PDOException
 	 */
 	private function ExecuteQuery($query, $params = array()) {
 		$dbo = $this->conn->prepare($query);

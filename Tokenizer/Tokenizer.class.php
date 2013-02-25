@@ -7,6 +7,9 @@ namespace Tokenizer;
  * @author Ярослав Нечаев <mail@remper.ru>
  */
 class Tokenizer {
+    const BASIC = 0;
+    const MYSTEM = 1;
+
 	private $token_exceptions;
 	private $token_prefixes;
 	private $dbsettings;
@@ -30,8 +33,8 @@ class Tokenizer {
 	 */
 	function __construct($settings) {
 		//Инициализируем настройки
-    	$this->token_exceptions = array_map('mb_strtolower', file(apath($settings['token']['exceptions']), FILE_IGNORE_NEW_LINES));
-    	$this->token_prefixes = file(apath($settings['token']['prefixes']), FILE_IGNORE_NEW_LINES);
+    	//$this->token_exceptions = array_map('mb_strtolower', file(apath($settings['token']['exceptions']), FILE_IGNORE_NEW_LINES));
+    	//$this->token_prefixes = file(apath($settings['token']['prefixes']), FILE_IGNORE_NEW_LINES);
 		$this->dbsettings = $settings['database'];
 		//Получаем инстанс базы данных
 		$this->db = Database::getDB();
@@ -42,9 +45,10 @@ class Tokenizer {
 	 * Токенизировать текст
 	 * 
 	 * @param string $text текст для токенизациии
+     * @param int $method метод токенизации
 	 * @return bool статус токенизации
 	 */
-	public function tokenizeText($text) {
+	public function tokenizeText($text, $method = self::MYSTEM) {
 		$text = new Text($text);
 		if (!$text->save())
 			return false;
@@ -55,26 +59,33 @@ class Tokenizer {
 		foreach ($paragraphs as $paragraph) {
 			try {
 				$paragraph->save();
-				array_merge($sentences, $paragraph->split());
-			} catch (Exception $e) {
+                $sentences = array_merge($sentences, $paragraph->split());
+			} catch (\Exception $e) {
 				//Обработка ошибки сохранения
 			}
 		}
-		
+
 		//Сохраняем предложения в базу данных, разбиваем предложения на токены
 		$tokens = array();
 		foreach ($sentences as $sentence) {
 			try {
 				$sentence->save();
-				array_merge($tokens, $sentence->split());
-			} catch (Exception $e) {
+                switch ($method) {
+                    case self::BASIC:
+				        array_merge($tokens, $sentence->split());
+                    break;
+                    case self::MYSTEM:
+                        array_merge($tokens, $sentence->mystemize());
+                    break;
+                }
+			} catch (\Exception $e) {
 				//Обработка ошибки сохранения
 			}
 		}
 		
 		//Сохраняем токены
-		foreach ($tokens as $token)
-			$token->save(); //Здесь нам пока пофиг на ошибку, потому что не создаётся сирот
+		//foreach ($tokens as $token)
+			//$token->save();
 	}
 }
 

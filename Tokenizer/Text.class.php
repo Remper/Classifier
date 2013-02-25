@@ -7,15 +7,24 @@ namespace Tokenizer;
  * @author Ярослав Нечаев <mail@remper.ru>
  */
 class Text extends Entity implements TRWhole {
-	/**
-	 * Конструктор
-	 * 
-	 * @param string $text текст
-	 * @param int $textid ID текста (необязательно)
-	 */
-	function __construct($text, $textid = 0) {
-    	$this->text = $this->filterText($text);;
+    protected $opinion;
+    protected $wordcount;
+    protected $text;
+    protected $id;
+
+    /**
+     * Конструктор
+     *
+     * @param string $text текст
+     * @param int $textid ID текста (необязательно)
+     * @param int $opinion Мнение пользователя о тексте (\Learned\Opinion)
+     * @param int $wordcount Количество валидных токенов в тексте
+     */
+	function __construct($text, $textid = 0, $opinion = 0, $wordcount = 0) {
+    	$this->text = $text;
 		$this->id = $textid;
+        $this->opinion = $opinion;
+        $this->wordcount = $wordcount;
    	}
 	
 	/**
@@ -25,12 +34,12 @@ class Text extends Entity implements TRWhole {
 	 */
 	public function split() {
 		//Разбиваем по двойному переносу строки
-		$splitText = preg_split('/\r?\n\r?\n\r?/', $text);
+		$splitText = preg_split('/\r?\n\r?\n\r?/', $this->text);
 		//Фильтруем пустые параграфы и возвращаем параграфы
 		$result = array();
 		foreach ($splitText as $paragraph)
 			if (preg_match('/\S/', $paragraph))
-				array_push($result, new Tokenizer\Paragraph($paragraph, count($result), $this->id));
+				array_push($result, new Paragraph($paragraph, count($result), $this->id));
 			
 		return $result;
 	}
@@ -44,15 +53,8 @@ class Text extends Entity implements TRWhole {
 		if ($this->isSaved())
 			return $this->id;
 		
-		if ($this->textid == 0) {
-			if ($textid == 0)
-				return false;
-			
-			$this->textid = $textid;
-		}
-		
 		$dbinstance = Database::getDB();
-		return $this->parid = $dbinstance->saveText($this);
+		return $this->id = $dbinstance->saveText($this);
 	}
 	
 	////
@@ -68,6 +70,43 @@ class Text extends Entity implements TRWhole {
 		if ($this->isSaved())
 			return false;
 	}
+
+    /**
+     * Сохранён ли текст в базу данных
+     */
+    public function isSaved() {
+        return (bool) $this->id;
+    }
+
+    public function setWordcount($wordcount)
+    {
+        $this->wordcount = $wordcount;
+    }
+
+    public function getWordcount()
+    {
+        return $this->wordcount;
+    }
+
+    public function setOpinion($opinion)
+    {
+        $this->opinion = $opinion;
+    }
+
+    public function getOpinion()
+    {
+        return $this->opinion;
+    }
+
+    public function setText($text)
+    {
+        $this->text = $text;
+    }
+
+    public function getText()
+    {
+        return $this->text;
+    }
 	
 	/**
 	 * Очистить текст от плохих символов

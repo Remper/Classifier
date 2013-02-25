@@ -24,13 +24,26 @@ class Sentence extends Entity {
 	 * @param int $parid ID параграфа (необязательно)
 	 * @param int $senid ID предложения (необязательно)
 	 */
-	function __construct($text, $order, $parid = 0, $senid = 0) {
+	public function __construct($text, $order, $parid = 0, $senid = 0) {
     	$this->text = $text;
 		$this->order = $order;
 		$this->parid = $parid;
 		$this->senid = $senid;
    	}
-	
+
+    public function mystemize() {
+        //Разбиваем по точке, переносов строк быть не должно
+        $q = iconv("utf-8", "windows-1251", $this->text);
+        exec('echo "'.$q.'" | ../helpers/mystem -ni', $tokens);
+
+        $result = array();
+        foreach ($tokens as $token) {
+            $result[] = iconv("windows-1251", "utf-8", $token);
+        }
+
+        return $result;
+    }
+
 	/**
 	 * Разбить предложение на токены
 	 * 
