@@ -16,18 +16,13 @@ class Log {
 	 */
 	function __construct($type, $filedir) {
 		$filename = $filedir . date("Y-m-d-H.i-");
-		switch ($type) {
-			case LogType::IMPORT:
-				$filename.= "import";
-			break;
-            case LogType::CORPUS:
-                $filename.= "corpus";
-            break;
-			default:
-			case LogType::TOKENIZER:
-				$filename.= "tokenize";
-			break;
-		}
+        $types = array(
+            LogType::IMPORT => "import",
+            LogType::CORPUS => "corpus",
+            LogType::TOKENIZER => "tokenizer",
+            LogType::LEARNER => "learner"
+        );
+        $filename .= $types[$type];
 		$this->handler = fopen($filename . ".log", "w");
 	}
 	
@@ -50,4 +45,5 @@ class LogType {
 	const IMPORT = 1;
 	const TOKENIZER = 2;
     const CORPUS = 3;
+    const LEARNER = 4;
 }

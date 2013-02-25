@@ -52,3 +52,9 @@ class Learner
         return $this->method;
     }
 }
+
+class Opinion {
+    const NEUTRAL = 0;
+    const POSITIVE = 1;
+    const NEGATIVE = -1;
+}

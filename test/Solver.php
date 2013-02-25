@@ -3,12 +3,22 @@
 include("../bootstrap.php");
 header('Content-type: text/html; charset=utf-8');
 
-//Тест токенизатора
-$sen = new Tokenizer\Sentence("Роняет контр-лес багряный свой убор", 0);
-$test = $sen->split(array(), array());
-//var_dump($test);
+//Замеряем начальное время
+$start_time = microtime(true);
 
-//Основной тест
-$config = parse_ini_file("../settings.ini", true);
-$tokenizer = new Tokenizer\Tokenizer($config);
+//Получить настройки базы данных
+$settings = parse_ini_file("../settings.ini", true);
 
+//Создать инстанс базы данных и подключиться
+$db = \Tokenizer\Database::getDB();
+$db->connect($settings['database']['login'], $settings['database']['pass'], $settings['database']['db']);
+
+//Открыть лог
+$log = new \Log(\LogType::LEARNER, ".." . $settings['log']['dir']);
+
+$log->writeLog("System ready, starting Learner");
+
+
+
+echo "Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds\n";
+$log->writeLog("Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds");
