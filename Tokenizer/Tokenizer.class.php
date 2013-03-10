@@ -72,17 +72,18 @@ class Tokenizer {
 				$sentence->save();
                 switch ($method) {
                     case self::BASIC:
-				        array_merge($tokens, $sentence->split());
+                        $tokens= array_merge($tokens, $sentence->split());
                     break;
                     case self::MYSTEM:
-                        array_merge($tokens, $sentence->mystemize());
+                        $mystem = new Mystem(Mystem::AMBIG_YES);
+                        $tokens = array_merge($tokens, $mystem->run($sentence));
                     break;
                 }
 			} catch (\Exception $e) {
 				//Обработка ошибки сохранения
 			}
 		}
-		
+		//var_dump($tokens);
 		//Сохраняем токены
 		//foreach ($tokens as $token)
 			//$token->save();

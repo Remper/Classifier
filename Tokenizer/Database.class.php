@@ -221,6 +221,26 @@ class Database {
         return $row["formid"];
     }
 
+    /**
+     * Найти все формы с заданным текстом
+     *
+     * @param string $text Текст
+     * @return Form[] формы
+     */
+    public function findLemma($text) {
+        $result = $this->ExecuteQuery("
+            SELECT `lemmid`, `formid`, `text`, `grammems` FROM `lemmas`
+            WHERE `text` = LOWER(:text)
+        ", array(
+            array(":text", $text, \PDO::PARAM_STR)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC))
+            array_push($res, new Form($row["lemmid"], $row["formid"], $row["text"], $row["grammems"]));
+        return $res;
+    }
+
 //////
 // Функции поиска
 //////

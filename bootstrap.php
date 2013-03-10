@@ -7,4 +7,3 @@ function apath($path) {
 	return $_SERVER['DOCUMENT_ROOT'] . $path;
 }
 
-?>

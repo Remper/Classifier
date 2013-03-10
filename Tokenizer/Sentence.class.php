@@ -31,19 +31,6 @@ class Sentence extends Entity {
 		$this->senid = $senid;
    	}
 
-    public function mystemize() {
-        //Разбиваем по точке, переносов строк быть не должно
-        $q = iconv("utf-8", "windows-1251", $this->text);
-        exec('echo "'.$q.'" | ../helpers/mystem -ni', $tokens);
-
-        $result = array();
-        foreach ($tokens as $token) {
-            $result[] = iconv("windows-1251", "utf-8", $token);
-        }
-
-        return $result;
-    }
-
 	/**
 	 * Разбить предложение на токены
 	 * 
