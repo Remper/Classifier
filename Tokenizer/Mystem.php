@@ -13,14 +13,17 @@ class Mystem
     const AMBIG_NO = 1;
 
     protected $ambiguity;
+    protected $solver;
 
     /**
      * Constructor
      *
      * @param int $ambiguity Should we treat ambiguity
+     * @param Solver $solver custom solver object
      */
-    public function __construct($ambiguity = self::AMBIG_NO) {
+    public function __construct($ambiguity = self::AMBIG_NO, $solver = null) {
         $this->ambiguity = $ambiguity;
+        $this->solver = $solver;
     }
 
     /**
@@ -42,10 +45,14 @@ class Mystem
         if ($this->ambiguity == self::AMBIG_NO) {
             $result = array();
             foreach ($parsedTokens as $token) {
-                $result[] = $token[0];
+                $result[] = $token[0]->convertToToken($sentence->getSenid(), count($result));
             }
         } else {
-            $sol = new Solver();
+            if ($this->solver == null) {
+                $sol = new Solver();
+            } else {
+                $sol = $this->solver;
+            }
             $result = $sol->solve($sentence, $parsedTokens);
         }
 

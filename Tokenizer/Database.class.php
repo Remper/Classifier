@@ -88,7 +88,26 @@ class Database {
 //////
 // Геттеры
 //////
-	
+
+    /**
+     * Получить сырые данные морфологического анализа из базы данных
+     *
+     * @param int $senid ID предложения
+     * @return array Сырые данные
+     */
+    public function getRawData($senid) {
+        $result = $this->ExecuteQuery("
+			SELECT
+				`id`, `sen_id`, `data`
+			FROM `raw_signature`
+			WHERE `sen_id` = :senid
+		", array(
+            array(":senid", $senid, \PDO::PARAM_INT)
+        ));
+
+        return $result->fetch(\PDO::FETCH_ASSOC);
+    }
+
 	/**
 	 * Получить массив коэффициентов для всех известных векторов
 	 * 

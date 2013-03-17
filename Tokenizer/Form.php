@@ -60,4 +60,15 @@ class Form
     {
         return $this->text;
     }
+
+    /**
+     * Convert form to the corresponding token
+     *
+     * @param int $senid
+     * @param int $order
+     * @return Token
+     */
+    public function convertToToken($senid, $order) {
+        return new Token($this->text, $senid, $order, $this->lemmaid, $this->formid);
+    }
 }

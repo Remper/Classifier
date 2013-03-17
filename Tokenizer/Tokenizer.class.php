@@ -83,10 +83,10 @@ class Tokenizer {
 				//Обработка ошибки сохранения
 			}
 		}
-		//var_dump($tokens);
+
 		//Сохраняем токены
-		//foreach ($tokens as $token)
-			//$token->save();
+	    foreach ($tokens as $token)
+			$token->save();
 	}
 }
 

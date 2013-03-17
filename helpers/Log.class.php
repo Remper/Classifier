@@ -7,14 +7,16 @@
 class Log {
 	//Хендлер файла
 	private $handler;
-	
-	/**
-	 * Конструктор лог-файла
-	 * 
-	 * @param LogType $type Тип лога
-	 * @param string $filedir Папка с логами
-	 */
-	function __construct($type, $filedir) {
+    private $verbose;
+
+    /**
+     * Конструктор лог-файла
+     *
+     * @param LogType $type Тип лога
+     * @param string $filedir Папка с логами
+     * @param bool $verbose Выводить ли лог в консоль
+     */
+	function __construct($type, $filedir, $verbose = false) {
 		$filename = $filedir . date("Y-m-d-H.i-");
         $types = array(
             LogType::IMPORT => "import",
@@ -24,6 +26,7 @@ class Log {
         );
         $filename .= $types[$type];
 		$this->handler = fopen($filename . ".log", "w");
+        $this->verbose = $verbose;
 	}
 	
 	/**
@@ -34,6 +37,9 @@ class Log {
 	public function writeLog($message) {
 		$message = date("[H:i:s] ") . $message . "\n";
 		fwrite($this->handler, $message);
+        if ($this->verbose) {
+            echo $message;
+        }
 	}
 	
 	public function __destruct() {
