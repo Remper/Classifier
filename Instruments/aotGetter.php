@@ -15,7 +15,7 @@ $db = \Tokenizer\Database::getDB();
 $db->connect($settings['database']['login'], $settings['database']['pass'], $settings['database']['db']);
 
 //Открыть лог
-$log = new \Log(\LogType::IMPORT, ".." . $settings['log']['dir']);
+$log = new \Log(\LogType::IMPORT, ".." . $settings['log']['dir'], true);
 
 $log->writeLog("System ready, starting to gather data");
 
@@ -43,15 +43,12 @@ while (count($sens) != 0) {
     }
     $start += 100;
     $sens = $db->getAllSentences($start, $limit);
-    
-    echo $count . " sentences parsed\n";
+
     $log->writeLog($count . " sentences parsed");
 }
 
 curl_close($curl);
 
 //Выводим статистику
-echo "Sentences parsed: " . $count . "\n";
 $log->writeLog("Sentences parsed: " . $count);
-echo "Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds\n";
 $log->writeLog("Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds");

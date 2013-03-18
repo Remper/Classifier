@@ -37,7 +37,7 @@ class Paragraph extends Entity implements TRPiece, TRWhole {
 	public function split() {
 		//Разбиваем по точке, переносов строк быть не должно
 		$splitText = preg_split('/\. +/', $this->text);
-        $splitText = preg_replace('/(\n)|(\r)|(\.)/', '', $splitText);
+        $splitText = preg_replace('/(\n)|(\r)|(\.)/', ' ', $splitText);
 		//Фильтруем пустые предложения и возвращаем результат
         $result = array();
 		foreach ($splitText as $paragraph) {
