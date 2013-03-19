@@ -89,6 +89,9 @@ class Mystem
 
         $dbinstance = Database::getDB();
         $forms = $dbinstance->findLemma($result[0]);
+        if (count($forms) == 0) {
+            $forms[] = new Form(0, 0, $result[0], "[\"Unknown\"]");
+        }
 
         return $forms;
     }

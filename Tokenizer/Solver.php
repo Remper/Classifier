@@ -49,7 +49,11 @@ class Solver
                 break;
             case self::CACHE:
                 $graph = $db->getRawData($sentence->getSenid());
-                $graph = $graph["data"];
+                if ($graph == false) {
+                    $graph = "";
+                } else {
+                    $graph = $graph["data"];
+                }
                 break;
         }
 
@@ -64,6 +68,10 @@ class Solver
                 continue;
             }
 
+            if (!isset($ambtok[0])) {
+                var_dump($ambiguity);
+                exit(0);
+            }
             $word = $ambtok[0];
             $pos = array_search(mb_strtoupper($word->getText(), "UTF-8"), $graph[1]);
 

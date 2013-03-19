@@ -18,7 +18,7 @@ $log = new \Log(\LogType::LEARNER, ".." . $settings['log']['dir']);
 
 $log->writeLog("System ready, starting Learner");
 
-
+var_dump($db->getRawData(116592));
 
 echo "Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds\n";
 $log->writeLog("Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds");

@@ -198,6 +198,23 @@ class Database {
         return $res;
     }
 
+    public function getAllSentencesWithData($start = 0, $limit = 1000) {
+        $result = $this->ExecuteQuery("
+            SELECT a.`id`, a.`par_id`, a.`order`, a.`text`, b.`data`
+            FROM `sentences` AS a
+            LEFT JOIN `raw_signature` AS b ON a.id = b.sen_id
+            LIMIT :start, :limit
+        ", array(
+            array(":start", $start, \PDO::PARAM_INT),
+            array(":limit", $limit, \PDO::PARAM_INT)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC))
+            array_push($res, $row);
+        return $res;
+    }
+
     /**
      * Найти все граммемы с заданным parent ID
      *
