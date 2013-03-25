@@ -176,6 +176,85 @@ class Database {
 	}
 
     /**
+     * Получить все тексты
+     *
+     * @param $start С какого текста возвращать результат
+     * @param $limit Максимальное количество результатов
+     * @return array Массив результатов
+     */
+    public function getAllTexts($start = 0, $limit = 1000) {
+        $result = $this->ExecuteQuery("
+            SELECT `id`, `text`, `opinion`, `wordcount`
+            FROM `texts`
+            LIMIT :start, :limit
+        ", array(
+            array(":start", $start, \PDO::PARAM_INT),
+            array(":limit", $limit, \PDO::PARAM_INT)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC))
+            array_push($res, $row);
+        return $res;
+    }
+
+    /**
+     * Получить все токены по тексту
+     *
+     * @param $textid ID текста
+     * @return array Массив результатов
+     */
+    public function getTokensByTextID($textid) {
+        $result = $this->ExecuteQuery("
+            SELECT `id`, `sen_id`, `order`, `text`, `lemma_id`, `form_id`, `checked`, `method`
+            FROM `tokens`
+            WHERE `text_id` = :textid
+        ", array(
+            array(":textid", $textid, \PDO::PARAM_INT)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC))
+            array_push($res, $row);
+        return $res;
+    }
+
+    public function getHighestWordcount() {
+        $result = $this->ExecuteQuery("
+            SELECT `wordcount`
+            FROM `texts` ORDER BY `wordcount` DESC
+            LIMIT 0, 1
+        ");
+
+        $row  = $result->fetch(\PDO::FETCH_ASSOC);
+        return (int) $row["wordcount"];
+    }
+
+    /**
+     * Получить все тексты, полезные для обучения
+     *
+     * @param $start С какого текста возвращать результат
+     * @param $limit Максимальное количество результатов
+     * @return array Массив результатов
+     */
+    public function getAllValuableTexts($start = 0, $limit = 1000) {
+        $result = $this->ExecuteQuery("
+            SELECT `id`, `text`, `opinion`, `wordcount`
+            FROM `texts`
+            WHERE `opinion` <> 0 AND `wordcount` <> 0
+            LIMIT :start, :limit
+        ", array(
+            array(":start", $start, \PDO::PARAM_INT),
+            array(":limit", $limit, \PDO::PARAM_INT)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC))
+            array_push($res, $row);
+        return $res;
+    }
+
+    /**
      * Получить все предложения
      *
      * @param $start С какого предложения возвращать результат
@@ -500,7 +579,7 @@ class Database {
 	 * @return \PDOStatement Объект запроса в базу
 	 * @throws \PDOException
 	 */
-	private function ExecuteQuery($query, $params = array()) {
+	public function ExecuteQuery($query, $params = array()) {
 		$dbo = $this->conn->prepare($query);
 		foreach($params as $param) {
 			$dbo->bindValue($param[0], $param[1], $param[2]);

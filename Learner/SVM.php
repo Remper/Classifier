@@ -40,7 +40,7 @@ class SVM
             \SVM::OPT_KERNEL_TYPE => $kernel,
             \SVM::OPT_C => $cost
         );
-        if ($kernel != LINEAR) {
+        if ($kernel != self::LINEAR) {
             $settings[\SVM::OPT_GAMMA] = $gamma;
         }
         $this->svm->setOptions($settings);

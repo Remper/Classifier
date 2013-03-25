@@ -28,10 +28,10 @@ class Learner
 
         //Parsing method
         switch ($method) {
-            case SVM:
+            case self::SVM:
                 $this->learner = new SVM($options["kernel"], $options["cost"], $options["gamma"]);
             break;
-            case BAYES:
+            case self::BAYES:
 
             break;
         }
