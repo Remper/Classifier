@@ -39,21 +39,38 @@ $log->writeLog("System initialized");
 
 //Выбираем все тексты
 $dbinstance = Database::getDB();
-$texts = $dbinstance->getAllValuableTexts(0, 10);
+$texts = $dbinstance->getAllValuableTexts(0, 10000);
 $maximum = $dbinstance->getHighestWordcount();
 $count = 0;
 
 $normalized = array();
 foreach ($texts as $text) {
     $class = $text["opinion"] > 5 ? 1: -1;
+    $tokens = $dbinstance->getTokensByTextID($text["id"]);
+    $freq = array();
+    foreach ($tokens as $token) {
+        $handler = $token["lemma_id"]+$token["form_id"]*10000000;
+        if (!isset($freq[$handler]))
+            $freq[$handler] = 0;
+        $freq[$handler]++;
+    }
+    $keys = array_keys($freq);
+    for ($i = 0; $i < count($keys); $i++) {
+        $freq[$keys[$i]] = $freq[$keys[$i]] / count($tokens);
+    }
+
     $normalized[] = array(
-        $class,
+        $class, $freq
     );
 
-    var_dump($dbinstance->getTokensByTextID($text["id"]));
+    $count++;
+    if ($count % 50 == 0)
+        $log->writeLog("Prepared " . $count . " texts");
 }
 
 
-//var_dump($learner->crossvalidate($normalized, 5));
+$result = $learner->crossvalidate($normalized, 5);
+
+$log->writeLog("Result: " . $result);
 
 $log->writeLog("Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds");
