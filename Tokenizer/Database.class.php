@@ -201,12 +201,12 @@ class Database {
     /**
      * Получить все токены по тексту
      *
-     * @param $textid ID текста
-     * @return array Массив результатов
+     * @param int $textid ID текста
+     * @return Token[] Массив результатов
      */
     public function getTokensByTextID($textid) {
         $result = $this->ExecuteQuery("
-            SELECT `id`, `sen_id`, `order`, `text`, `lemma_id`, `form_id`, `checked`, `method`
+            SELECT `id`, `sen_id`, `order`, `text`, `lemma_id`, `form_id`, `checked`, `method`, `idf`
             FROM `tokens`
             WHERE `text_id` = :textid
         ", array(
@@ -214,8 +214,9 @@ class Database {
         ));
 
         $res = array();
-        while ($row = $result->fetch(\PDO::FETCH_ASSOC))
-            array_push($res, $row);
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
+            array_push($res, new Token($row["text"], $row["sen_id"], $row["order"], $row["lemma_id"], $row["form_id"], $row["checked"], $row["method"], $row["idf"]));
+        }
         return $res;
     }
 
@@ -235,7 +236,7 @@ class Database {
      *
      * @param $start С какого текста возвращать результат
      * @param $limit Максимальное количество результатов
-     * @return array Массив результатов
+     * @return Text[] Массив результатов
      */
     public function getAllValuableTexts($start = 0, $limit = 1000) {
         $result = $this->ExecuteQuery("
@@ -250,7 +251,65 @@ class Database {
 
         $res = array();
         while ($row = $result->fetch(\PDO::FETCH_ASSOC))
-            array_push($res, $row);
+            array_push($res, new Text($row["text"], (int) $row["id"], (int) $row["opinion"], $row["wordcount"]));
+        return $res;
+    }
+
+    public function getValuableTextsCount() {
+        $result = $this->ExecuteQuery("
+            SELECT COUNT(*)
+            FROM `texts`
+            WHERE `opinion` <> 0 AND `wordcount` <> 0
+        ");
+
+        $row = $result->fetch(\PDO::FETCH_NUM);
+        return $row[0];
+    }
+
+    /**
+     * @param Token $token
+     */
+    public function getTextsCountWithToken($token) {
+        $result = $this->ExecuteQuery("
+            SELECT COUNT(DISTINCT b.id)
+            FROM tokens AS a
+            INNER JOIN texts AS b ON a.text_id = b.id
+            WHERE a.lemma_id = :lemma_id AND a.form_id = :form_id
+        ", array(
+            array(":lemma_id", $token->getLemmaId(), \PDO::PARAM_INT),
+            array(":form_id", $token->getFormId(), \PDO::PARAM_INT)
+        ));
+
+        $row = $result->fetch(\PDO::FETCH_NUM);
+        return $row[0];
+    }
+
+    /**
+     * @param int $start
+     * @param int $limit
+     * @return Token[]
+     */
+    public function getTokensFromValuableTexts($start = 0, $limit = 1000) {
+        $result = $this->ExecuteQuery("
+            SELECT
+                COUNT(DISTINCT a.`text_id`) AS `count`, a.`id`, a.`sen_id`, a.`order`, a.`text`, a.`lemma_id`, a.`form_id`, a.`checked`, a.`method`, a.`idf`
+            FROM tokens AS a
+            INNER JOIN texts AS b ON a.text_id = b.id
+            WHERE b.opinion <> 0 AND b.wordcount <> 0
+            GROUP BY a.`lemma_id`, a.`form_id`
+            LIMIT :start, :limit
+        ", array(
+            array(":start", $start, \PDO::PARAM_INT),
+            array(":limit", $limit, \PDO::PARAM_INT)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
+            array_push($res, array(
+                "token" => new Token($row["text"], $row["sen_id"], $row["order"], $row["lemma_id"], $row["form_id"], $row["checked"], $row["method"], $row["idf"]),
+                "count" => $row["count"]
+            ));
+        }
         return $res;
     }
 

@@ -38,7 +38,7 @@ $count = 0;
 
 $normalized = array();
 foreach ($texts as $text) {
-    $class = $text["opinion"] > 6 ? 1: -1;
+    $class = $text["opinion"] > 5 ? 1: -1;
     $tokens = $dbinstance->getTokensByTextID($text["id"]);
     $freq = array();
     $freq[0] = $class;

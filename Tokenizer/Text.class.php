@@ -10,6 +10,7 @@ class Text extends Entity implements TRWhole {
     protected $opinion;
     protected $wordcount;
     protected $text;
+    protected $tokens;
     protected $id;
 
     /**
@@ -25,6 +26,7 @@ class Text extends Entity implements TRWhole {
 		$this->id = $textid;
         $this->opinion = $opinion;
         $this->wordcount = $wordcount;
+        $this->tokens = null;
    	}
 	
 	/**
@@ -67,9 +69,26 @@ class Text extends Entity implements TRWhole {
 	 * @return array массив текстов, либо false, если текст не сохранён в базу данных
 	 */
 	public function getPieces() {
-		if ($this->isSaved())
+		if (!$this->isSaved())
 			return false;
 	}
+
+    /**
+     * Получить список всех токенов текста
+     *
+     * @return Token[] Список токенов
+     */
+    public function getTokens() {
+        if (!$this->isSaved())
+            return false;
+
+        if ($this->tokens !== null)
+            return $this->tokens;
+
+        $dbinstance = Database::getDB();
+        $this->tokens = $dbinstance->getTokensByTextID($this->id);
+        return $this->tokens;
+    }
 
     /**
      * Сохранён ли текст в базу данных
@@ -107,7 +126,17 @@ class Text extends Entity implements TRWhole {
     {
         return $this->text;
     }
-	
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function equals(Text $text)
+    {
+        return $text->getId() == $this->getId();
+    }
+
 	/**
 	 * Очистить текст от плохих символов
 	 * 
