@@ -8,6 +8,7 @@
 include("../bootstrap.php");
 
 use Tokenizer\Features\VectorModel;
+use Tokenizer\Features\VectorModel\IDF\IDFP;
 use Tokenizer\Tokenizer;
 use Tokenizer\Mystem;
 use Tokenizer\Solver;
@@ -38,18 +39,17 @@ $vm = new VectorModel();
 
 $dbinstance = Database::getDB();
 
-$log->writeLog("Caching IDF");
+$log->writeLog("Caching IDF & IDFP");
 
 $count = 0;
 $tokens = $dbinstance->getTokensFromValuableTexts(0, 500000);
+$log->writeLog("Memory limit: " . ini_get('memory_limit') . "B. Used: " . number_format((memory_get_usage()/1024)/1024, 1, ".", " ") . "MB");
+$idf = $vm->getScheme()->getIdf();
+$idfp = new IDFP();
 while (count($tokens) != 0) {
-    $tokens = $dbinstance->getTokensFromValuableTexts($count, 500000);
-
-    $log->writeLog("Memory limit: " . ini_get('memory_limit') . "B. Used: " . number_format((memory_get_usage()/1024)/1024, 1, ".", " ") . "MB");
-
-    $idf = $vm->getScheme()->getIdf();
     foreach ($tokens as $token) {
         $idf->fillCache($token["token"], $token["count"]);
+        $idfp->fillCache($token["token"], $token["count"]);
         $count++;
         if ($count % 5000 == 0) {
             $log->writeLog($count . " parsed");
@@ -57,35 +57,101 @@ while (count($tokens) != 0) {
     }
 
     $tokens = null;
-
     $log->writeLog("Memory used: " . number_format((memory_get_usage()/1024)/1024, 1, ".", " ") . "MB");
+    $tokens = $dbinstance->getTokensFromValuableTexts($count, 500000);
 }
 
 $log->writeLog("Calculating TFIDF");
 
 $count = 0;
-$texts = $dbinstance->getAllValuableTexts(0, 1000);
-$filename = "model_new.txt";
-$hand = fopen($filename, "w");
+$positive = 0;
+$texts = $dbinstance->getAllValuableTexts(0, 500);
+$tfidf = fopen("model_tfidf.txt", "w");
+$tfidfp = fopen("model_tfidfp.txt", "w");
 while (count($texts) != 0) {
-    $texts = $dbinstance->getAllValuableTexts($count, 1000);
-
     foreach ($texts as $text) {
-        fwrite($hand, $text->getOpinion() > 6 ? 1: -1);
+        $label  = "-1";
+        if ($text->getOpinion() > 6) {
+            $positive++;
+            $label = "+1";
+        }
+        fwrite($tfidf, $label);
+        fwrite($tfidfp, $label);
+
+        $vm->getScheme()->setPrecomputedIdf($idf);
         $vector = $vm->calculateFeatures($text);
         ksort($vector);
         foreach($vector as $key => $value) {
-            fwrite($hand, " " . $key . ":" . number_format($value, 4, ".", " "));
+            fwrite($tfidf, " " . $key . ":" . number_format($value, 4, ".", " "));
         }
-        fwrite($hand, "\n");
+        fwrite($tfidf, "\n");
+        unset($vector);
+
+        $vm->getScheme()->setPrecomputedIdf($idfp);
+        $vector = $vm->calculateFeatures($text);
+        ksort($vector);
+        foreach($vector as $key => $value) {
+            fwrite($tfidfp, " " . $key . ":" . number_format($value, 4, ".", " "));
+        }
+        fwrite($tfidfp, "\n");
+        unset($vector);
 
         $count++;
         if ($count % 100 == 0) {
             $log->writeLog($count . " parsed");
         }
     }
+
+    $texts = null;
     $log->writeLog("Memory used: " . number_format((memory_get_usage()/1024)/1024, 1, ".", " ") . "MB");
+    $texts = $dbinstance->getAllValuableTexts($count, 500);
 }
-fclose($hand);
+fclose($tfidf);
+fclose($tfidfp);
+
+$log->writeLog("Cleaning up");
+
+$texts = null;
+$idf = null;
+$vm = null;
+
+$log->writeLog("Memory used: " . number_format((memory_get_usage()/1024)/1024, 1, ".", " ") . "MB");
+
+if ($positive > $count-$positive) {
+    $posRate = ($count-$positive) / $count;
+    $negRate = 1 - $posRate;
+} else {
+    $negRate = $positive / $count;
+    $posRate = 1 - $negRate;
+}
+
+$files = array(
+    "TFxIDF" => "model_tfidf",
+    "TFxIDFP" => "model_tfidfp"
+);
+foreach ($files as $key => $value) {
+    $log->writeLog("Starting LIBSVM cross-validation for " . $key);
+
+    $log->writeLog("Training set size: " . $count);
+    $log->writeLog("Weights: " . number_format($posRate, 2, ".", " ") . " " . number_format($negRate, 2, ".", " "));
+    $kernels = array(
+        "Linear" => 0,
+        "Poly" => 1,
+        "Radial" => 2,
+        "Sigmoid" => 3
+    );
+    foreach ($kernels as $kername => $kertype) {
+        $log->writeLog($kername . ": " . exec("svm-train -h 0 -b 1 -s 0 -t ". $kertype ." -v 5 -w1 ". $posRate ." -w-1 ". $negRate ." ". $value .".txt"));
+    }
+    $log->writeLog("Saving model: " . exec("svm-train -h 0 -b 1 -s 0 -t 2 -w1 ". $posRate ." -w-1 ". $negRate ." ". $value .".txt " . $value . ".model"));
+}
+foreach ($files as $key => $value) {
+    $log->writeLog("Starting LIBLINEAR cross-validation for " . $key);
+
+    $log->writeLog("Training set size: " . $count);
+    $log->writeLog("Weights: " . number_format($posRate, 2, ".", " ") . " " . number_format($negRate, 2, ".", " "));
+    for ($i = 0; $i < 8; $i++)
+        $log->writeLog($i . ": " . exec("train -s ". $i ." -c 4 -e 0.1 -v 5 -w+1 ". $posRate ." -w-1 ". $negRate ." ". $value .".txt"));
+}
 
 $log->writeLog("Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds");

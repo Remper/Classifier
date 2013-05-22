@@ -31,8 +31,6 @@ class IDF implements AbstractIDF {
             return $this->cache->getValue($token);
         }
 
-        echo "Джеронимо!\n";
-
         $this->cacheValuableTextCount();
 
         $dbinstance = Database::getDB();

@@ -61,7 +61,7 @@ class Cache {
      * @param Text|null $text
      */
     public function addValue($token, $text, $value) {
-        $this->cache[$token->getUniqueId()] = new CacheItem($text, $value);
+        $this->cache[$token->getUniqueId()] = new CacheItem($text == null ? null : $text->getText(), $value);
     }
 }
 
@@ -69,7 +69,7 @@ class CacheItem {
     public $text;
     public $value;
 
-    public function __construct(Text $text = null, $value) {
+    public function __construct($text = null, $value) {
         $this->text = $text;
         $this->value = $value;
     }

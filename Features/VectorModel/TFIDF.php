@@ -69,6 +69,10 @@ class TFIDF implements AbstractScheme {
         $this->idf = new $idfName();
     }
 
+    public function setPrecomputedIdf($idf) {
+        $this->idf = $idf;
+    }
+
     public function getIdf()
     {
         return $this->idf;
