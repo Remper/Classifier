@@ -12,4 +12,6 @@ use Tokenizer\Token;
 
 interface AbstractScheme {
     public function calculate(Token $token, Text $text);
+
+    public function clearCache();
 }

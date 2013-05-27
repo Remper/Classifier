@@ -99,4 +99,11 @@ class TFIDF implements AbstractScheme {
     {
         return $this->tf;
     }
+
+    public function clearCache()
+    {
+        $this->cache = null;
+        $this->cache = new Cache(Cache::FULL);
+        $this->tf->clearCache();
+    }
 }

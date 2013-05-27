@@ -13,4 +13,6 @@ use Tokenizer\Text;
 
 interface AbstractTF {
     public function calculate(Token $token, Text $text);
+
+    public function clearCache();
 }

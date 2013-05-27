@@ -38,4 +38,10 @@ class TF implements AbstractTF {
             return $value;
         }
     }
+
+    public function clearCache()
+    {
+        $this->cache = null;
+        $this->cache = new Cache(Cache::FULL);
+    }
 }

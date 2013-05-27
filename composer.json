@@ -1,0 +1,19 @@
+{
+    "name": "remper/diploma",
+    "description": "Yaroslav Nechaev's Diploma",
+    "autoload": {
+        "psr-0": { "": "src/" }
+    },
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/console": "2.1.*"
+    },
+    "minimum-stability": "alpha",
+    "extra": {
+        "symfony-app-dir": "app",
+        "symfony-web-dir": "web",
+        "branch-alias": {
+            "dev-master": "2.2-dev"
+        }
+    }
+}

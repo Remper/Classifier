@@ -11,10 +11,15 @@ namespace Tokenizer\Features\VectorModel\TF;
 use Tokenizer\Text;
 use Tokenizer\Token;
 
-class Log implements AbstractTF {
+class Bin implements AbstractTF {
 
     public function calculate(Token $token, Text $text)
     {
-        // TODO: Implement calculate() method.
+        return 1.0;
+    }
+
+    public function clearCache()
+    {
+
     }
 }

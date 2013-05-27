@@ -16,4 +16,9 @@ class ATF1 implements AbstractTF {
     {
         // TODO: Implement calculate() method.
     }
+
+    public function clearCache()
+    {
+
+    }
 }
