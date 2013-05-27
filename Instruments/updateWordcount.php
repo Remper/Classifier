@@ -11,7 +11,6 @@ use Tokenizer\Tokenizer;
 use Tokenizer\Mystem;
 use Tokenizer\Solver;
 use Tokenizer\Database;
-use Tokenizer\Sentence;
 use Learner\Learner;
 use Learner\SVM;
 
@@ -24,7 +23,7 @@ $start_time = microtime(true);
 $config = parse_ini_file("../settings.ini", true);
 $log = new \Log(\LogType::INSTRUMENT, ".." . $config['log']['dir'], true);
 
-$log->writeLog("System ready, starting Learner");
+$log->writeLog("System ready, updating wordcount");
 
 $tokenizer = new Tokenizer($config);
 $dbinstance = Database::getDB();

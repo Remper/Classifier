@@ -31,10 +31,9 @@ class Token extends Entity implements TRPiece {
     //Метод которым было разбито предложение
     private $method;
 
-    // IDF
-    private $idf;
+    private $text_id;
 
-    public function __construct($text, $senid, $order, $lemma_id = 0, $form_id = 0, $checked = true, $method = Methods::CORPUS, $idf = null) {
+    public function __construct($text, $senid, $order, $lemma_id = 0, $form_id = 0, $checked = true, $method = Methods::CORPUS) {
         $this->text = $text;
         $this->senid = $senid;
         $this->order = $order;
@@ -42,7 +41,7 @@ class Token extends Entity implements TRPiece {
         $this->form_id = $form_id;
         $this->checked = $checked;
         $this->method = $method;
-        $this->idf = $idf;
+        $this->text_id = 0;
     }
 
     /**
@@ -118,19 +117,19 @@ class Token extends Entity implements TRPiece {
     }
 
     /**
-     * @param int|null $idf
+     * @param mixed $text_id
      */
-    public function setIdf($idf)
+    public function setTextId($text_id)
     {
-        $this->idf = $idf;
+        $this->text_id = $text_id;
     }
 
     /**
-     * @return int|null
+     * @return mixed
      */
-    public function getIdf()
+    public function getTextId()
     {
-        return $this->idf;
+        return $this->text_id;
     }
 }
 

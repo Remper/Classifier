@@ -38,9 +38,11 @@ class VectorModel {
     }
 
     public function calculateFeatures(Text $text) {
+        $features = array();
         foreach ($text->getTokens() as $token) {
             $features[$token->getUniqueId()] = $this->scheme->calculate($token, $text);
         }
+        unset($features[1]);
         return $features;
     }
 }

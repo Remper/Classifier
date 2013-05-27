@@ -206,7 +206,7 @@ class Database {
      */
     public function getTokensByTextID($textid) {
         $result = $this->ExecuteQuery("
-            SELECT `id`, `sen_id`, `order`, `text`, `lemma_id`, `form_id`, `checked`, `method`, `idf`
+            SELECT `id`, `sen_id`, `order`, `text`, `lemma_id`, `form_id`, `checked`, `method`
             FROM `tokens`
             WHERE `text_id` = :textid
         ", array(
@@ -215,7 +215,7 @@ class Database {
 
         $res = array();
         while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
-            array_push($res, new Token($row["text"], $row["sen_id"], $row["order"], $row["lemma_id"], $row["form_id"], $row["checked"], $row["method"], $row["idf"]));
+            array_push($res, new Token($row["text"], $row["sen_id"], $row["order"], $row["lemma_id"], $row["form_id"], $row["checked"], $row["method"]));
         }
         return $res;
     }
@@ -292,7 +292,7 @@ class Database {
     public function getTokensFromValuableTexts($start = 0, $limit = 1000) {
         $result = $this->ExecuteQuery("
             SELECT
-                COUNT(DISTINCT a.`text_id`) AS `count`, a.`id`, a.`sen_id`, a.`order`, a.`text`, a.`lemma_id`, a.`form_id`, a.`checked`, a.`method`, a.`idf`
+                COUNT(DISTINCT a.`text_id`) AS `count`, a.`id`, a.`sen_id`, a.`order`, a.`text`, a.`lemma_id`, a.`form_id`, a.`checked`, a.`method`
             FROM tokens AS a
             INNER JOIN texts AS b ON a.text_id = b.id
             WHERE b.opinion <> 0 AND b.wordcount <> 0
@@ -306,7 +306,7 @@ class Database {
         $res = array();
         while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             array_push($res, array(
-                "token" => new Token($row["text"], $row["sen_id"], $row["order"], $row["lemma_id"], $row["form_id"], $row["checked"], $row["method"], $row["idf"]),
+                "token" => new Token($row["text"], $row["sen_id"], $row["order"], $row["lemma_id"], $row["form_id"], $row["checked"], $row["method"]),
                 "count" => $row["count"]
             ));
         }
@@ -334,6 +334,47 @@ class Database {
         while ($row = $result->fetch(\PDO::FETCH_ASSOC))
             array_push($res, $row);
         return $res;
+    }
+
+    /**
+     * Получить для которых не посчитаны токены
+     *
+     * @param $start С какого предложения возвращать результат
+     * @param $limit Максимальное количество результатов
+     * @return array Массив результатов
+     */
+    public function getAllSentWithoutTokens($start = 0, $limit = 1000) {
+        $result = $this->ExecuteQuery("
+            SELECT a.id AS `id`, a.par_id, a.order, a.text, c.id AS `text_id`
+            FROM `sentences` AS a
+            INNER JOIN `raw_signature` AS d ON a.id = d.sen_id
+            INNER JOIN `paragraphs` AS b ON a.par_id = b.id
+            INNER JOIN `texts` AS c ON b.text_id = c.id
+            WHERE c.wordcount = 0
+            LIMIT :start, :limit
+        ", array(
+            array(":start", $start, \PDO::PARAM_INT),
+            array(":limit", $limit, \PDO::PARAM_INT)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC))
+            array_push($res, $row);
+        return $res;
+    }
+
+    public function countForAllSentWithoutTokens() {
+        $result = $this->ExecuteQuery("
+            SELECT COUNT(*)
+            FROM `sentences` AS a
+            INNER JOIN `raw_signature` AS d ON a.id = d.sen_id
+            INNER JOIN `paragraphs` AS b ON a.par_id = b.id
+            INNER JOIN `texts` AS c ON b.text_id = c.id
+            WHERE c.wordcount = 0
+        ");
+
+        $row = $result->fetch(\PDO::FETCH_NUM);
+        return $row[0];
     }
 
     public function getAllSentencesWithData($start = 0, $limit = 1000) {
@@ -533,10 +574,11 @@ class Database {
 		$this->ExecuteQuery("
 			INSERT INTO
 				`tokens`
-			(`id`, `sen_id`, `order`, `text`, `lemma_id`, `form_id`, `checked`, `method`)
-			VALUES (NULL, :senid, :order, :text, :lemma_id, :form_id, :checked, :method)
+			(`id`, `sen_id`, `text_id`, `order`, `text`, `lemma_id`, `form_id`, `checked`, `method`)
+			VALUES (NULL, :senid, :text_id, :order, :text, :lemma_id, :form_id, :checked, :method)
 			", array(
 				array(":senid", $token->getParentId(), \PDO::PARAM_INT),
+                array(":text_id", $token->getTextId(), \PDO::PARAM_INT),
 				array(":order", $token->getOrder(), \PDO::PARAM_INT),
 				array(":text", $token->getText(), \PDO::PARAM_STR),
 				array(":lemma_id", $token->getLemmaId(), \PDO::PARAM_INT),
@@ -621,6 +663,38 @@ class Database {
 		    ", array(
                 array(":senid", $sen_id, \PDO::PARAM_INT),
                 array(":data", $data, \PDO::PARAM_STR)
+            )
+        );
+        return true;
+    }
+
+    public function getTextsWithWordcounts($start, $limit) {
+        $result = $this->ExecuteQuery("
+          SELECT a.id, COUNT(b.id) AS `count`
+          FROM texts AS a
+          INNER JOIN tokens AS b ON a.id = b.text_id
+          GROUP BY a.id
+          LIMIT :start, :limit
+        ", array(
+            array(":start", $start, \PDO::PARAM_INT),
+            array(":limit", $limit, \PDO::PARAM_INT)
+        ));
+
+        $res = array();
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
+            array_push($res, $row);
+        }
+        return $res;
+    }
+
+    public function setTextWordcount($textid, $count) {
+        $this->ExecuteQuery("
+		    UPDATE texts
+		    SET wordcount = :count
+		    WHERE id = :id
+		    ", array(
+                array(":id", $textid, \PDO::PARAM_INT),
+                array(":count", $count, \PDO::PARAM_STR)
             )
         );
         return true;

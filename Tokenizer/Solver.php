@@ -58,7 +58,9 @@ class Solver
         }
 
         //Parsing graph
-        $graph = $this->parseGraph($graph);
+        if (($graph = $this->parseGraph($graph)) == false) {
+            return false;
+        }
 
         //Solving ambiguity
         $result = array();
@@ -107,6 +109,9 @@ class Solver
      * @return array Parsed data
      */
     private function parseGraph($graph) {
+        if (strpos($graph, "nodes#") != 0)
+            return false;
+
         $matches = array();
         preg_match_all("/#label ([^ #]+)( [^#]*)?#Morphology ([^ ]+) =   ([^ ]+) ([^$]+)?/i", $graph, $matches);
         return $matches;

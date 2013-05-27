@@ -22,7 +22,8 @@ class Log {
             LogType::IMPORT => "import",
             LogType::CORPUS => "corpus",
             LogType::TOKENIZER => "tokenizer",
-            LogType::LEARNER => "learner"
+            LogType::LEARNER => "learner",
+            LogType::INSTRUMENT => "instrument"
         );
         $filename .= $types[$type];
 		$this->handler = fopen($filename . ".log", "w");
@@ -52,4 +53,5 @@ class LogType {
 	const TOKENIZER = 2;
     const CORPUS = 3;
     const LEARNER = 4;
+    const INSTRUMENT = 5;
 }

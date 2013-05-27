@@ -39,6 +39,8 @@ class Mystem
 
         $parsedTokens = array();
         foreach ($tokens as $token) {
+            if ($token == "")
+                continue;
             $parsedTokens[] = $this->parseToken(iconv("windows-1251", "utf-8", $token));
         }
 

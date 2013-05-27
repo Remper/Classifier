@@ -130,13 +130,23 @@ $files = array(
     "TFxIDFP" => "model_tfidfp"
 );
 foreach ($files as $key => $value) {
+    $log->writeLog("Starting LIBLINEAR cross-validation for " . $key);
+
+    $log->writeLog("Training set size: " . $count);
+    $log->writeLog("Weights: " . number_format($posRate, 2, ".", " ") . " " . number_format($negRate, 2, ".", " "));
+    $types = array(0,1,2,3,4,5,6,7);
+    foreach ($types as $typeKey => $typeValue) {
+        $log->writeLog($typeValue . ": " . exec("train -s ". $typeValue ." -c 4 -e 0.1 -v 5 -w+1 ". $posRate ." -w-1 ". $negRate ." ". $value .".txt"));
+    }
+}
+foreach ($files as $key => $value) {
     $log->writeLog("Starting LIBSVM cross-validation for " . $key);
 
     $log->writeLog("Training set size: " . $count);
     $log->writeLog("Weights: " . number_format($posRate, 2, ".", " ") . " " . number_format($negRate, 2, ".", " "));
     $kernels = array(
         "Linear" => 0,
-        "Poly" => 1,
+        //"Poly" => 1,
         "Radial" => 2,
         "Sigmoid" => 3
     );
@@ -144,14 +154,6 @@ foreach ($files as $key => $value) {
         $log->writeLog($kername . ": " . exec("svm-train -h 0 -b 1 -s 0 -t ". $kertype ." -v 5 -w1 ". $posRate ." -w-1 ". $negRate ." ". $value .".txt"));
     }
     $log->writeLog("Saving model: " . exec("svm-train -h 0 -b 1 -s 0 -t 2 -w1 ". $posRate ." -w-1 ". $negRate ." ". $value .".txt " . $value . ".model"));
-}
-foreach ($files as $key => $value) {
-    $log->writeLog("Starting LIBLINEAR cross-validation for " . $key);
-
-    $log->writeLog("Training set size: " . $count);
-    $log->writeLog("Weights: " . number_format($posRate, 2, ".", " ") . " " . number_format($negRate, 2, ".", " "));
-    for ($i = 0; $i < 8; $i++)
-        $log->writeLog($i . ": " . exec("train -s ". $i ." -c 4 -e 0.1 -v 5 -w+1 ". $posRate ." -w-1 ". $negRate ." ". $value .".txt"));
 }
 
 $log->writeLog("Done in: " . number_format(microtime(true) - $start_time, 4, ".", " ") . " seconds");
