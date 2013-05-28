@@ -148,7 +148,7 @@ class SizeAccuracyCommand extends Command {
             $log->writeLog("Weights: " . number_format($weights[$size][0], 2, ".", " ") . " " . number_format($weights[$size][1], 2, ".", " "));
             $types = array(1,3,4);
             foreach ($types as $typeKey => $typeValue) {
-                $log->writeLog($typeValue . ": " . exec("train -s ". $typeValue ." -c 4 -e 0.1 -v 5 -w+1 ". $weights[0] ." -w-1 ". $weights[1] ." models/model_tfidf_". $size .".txt"));
+                $log->writeLog($typeValue . ": " . exec("train -s ". $typeValue ." -c 4 -e 0.1 -v 5 -w+1 ". $weights[$size][0] ." -w-1 ". $weights[$size][1] ." models/model_tfidf_". $size .".txt"));
             }
         }
 
