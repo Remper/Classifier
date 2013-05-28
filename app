@@ -11,10 +11,12 @@ ini_set('memory_limit', '2048M');
 
 require_once 'vendor/autoload.php';
 
+use Command\SizeAccuracyCommand;
 use Command\TFIDFCommand;
 use Symfony\Component\Console\Application;
 use Tokenizer\Tokenizer;
 
 $application = new Application("Diploma", "1.0");
 $application->add(new TFIDFCommand);
+$application->add(new SizeAccuracyCommand);
 $application->run();
