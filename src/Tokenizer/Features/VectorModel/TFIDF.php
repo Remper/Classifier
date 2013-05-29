@@ -19,7 +19,8 @@ class TFIDF implements AbstractScheme {
     const TF_ATF1 = "TF\\ATF1";
     const TF_BIN = "TF\\Bin";
     const TF_LOG = "TF\\Log";
-    const TF_LOGN = "TF\\LOGN";
+    const TF_TFLOG = "TF\\TFLog";
+    const TF_LOGN = "TF\\Logn";
     const IDF_IDF = "IDF\\IDF";
     const IDF_IDFP = "IDF\\IDFP";
     const IDF_DELTA = "IDF\\DeltaIDF";

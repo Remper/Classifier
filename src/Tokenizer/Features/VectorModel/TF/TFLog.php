@@ -11,7 +11,7 @@ use Tokenizer\Features\VectorModel\Cache;
 use Tokenizer\Text;
 use Tokenizer\Token;
 
-class Log implements AbstractTF {
+class TFLog implements AbstractTF {
     /**
      * @var Cache
      */
@@ -33,9 +33,9 @@ class Log implements AbstractTF {
                     $counter++;
             }
 
-            $value = 0;
+            $value =  $counter / count($text->getTokens());
             if ($counter != 0) {
-                $value = 1 + log($counter);
+                $value = log(1 + $value);
             }
             $this->cache->addValue($token, $text, $value);
             return $value;

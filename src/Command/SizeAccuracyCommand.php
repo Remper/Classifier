@@ -16,6 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Tokenizer\Database;
 use Tokenizer\Features\VectorModel;
 use Tokenizer\Features\VectorModel\IDF\IDFP;
+use Tokenizer\Features\VectorModel\TF\TF;
+use Tokenizer\Features\VectorModel\TFIDF;
 use Tokenizer\Tokenizer;
 
 
@@ -25,6 +27,11 @@ class SizeAccuracyCommand extends Command {
         $this
             ->setName('diploma:sizeAccuracy')
             ->setDescription('Проследить зависимость точности от размера выборки')
+            ->addArgument(
+                'tf',
+                InputArgument::OPTIONAL,
+                'Какую TF использовать'
+            )
         ;
     }
 
@@ -55,6 +62,27 @@ class SizeAccuracyCommand extends Command {
         $tokenizer = new Tokenizer($config);
 
         $vm = new VectorModel();
+        $tftype = $input->getArgument('tf');
+        if (!$tftype)
+            $tftype = "tf";
+        $tftype = strtolower($tftype);
+
+        switch ($tftype) {
+            default:
+            case "tf":
+                $vm->getScheme()->setTf(TFIDF::TF_TF);
+                break;
+            case "bin":
+                $vm->getScheme()->setTf(TFIDF::TF_BIN);
+                break;
+            case "log":
+                $vm->getScheme()->setTf(TFIDF::TF_LOG);
+                break;
+            case "tflog":
+                $vm->getScheme()->setTf(TFIDF::TF_TFLOG);
+                break;
+        }
+        $log->writeLog("Local weight: ".$tftype);
 
         $dbinstance = Database::getDB();
 
@@ -89,7 +117,7 @@ class SizeAccuracyCommand extends Command {
         $weights = array();
         $files = array();
         foreach ($sizes as $size) {
-            $files[$size] = fopen("models/model_tfidf_". $size .".txt", "w");
+            $files[$size] = fopen("models/model_". $tftype ."_idf_". $size .".txt", "w");
         }
         while (count($texts) != 0) {
             foreach ($texts as $text) {
@@ -115,7 +143,7 @@ class SizeAccuracyCommand extends Command {
                         fclose($file);
                         unset($files[$size]);
                         $weights[$size] = $this->getWeights($count, $positive);
-                        $log->writeLog("Model model_tfidf_". $size .".txt calculated");
+                        $log->writeLog("Model model_".$tftype."_idf_". $size .".txt calculated");
                     }
                 }
                 unset($vector);
@@ -133,6 +161,7 @@ class SizeAccuracyCommand extends Command {
         }
         foreach ($files as $size => $file) {
             fclose($file);
+            $weights[$size] = $this->getWeights($count, $positive);
         }
 
         $log->writeLog("Cleaning up");
@@ -148,7 +177,7 @@ class SizeAccuracyCommand extends Command {
             $log->writeLog("Weights: " . number_format($weights[$size][0], 2, ".", " ") . " " . number_format($weights[$size][1], 2, ".", " "));
             $types = array(1,3,4);
             foreach ($types as $typeKey => $typeValue) {
-                $log->writeLog($typeValue . ": " . exec("train -s ". $typeValue ." -c 4 -e 0.1 -v 5 -w+1 ". $weights[$size][0] ." -w-1 ". $weights[$size][1] ." models/model_tfidf_". $size .".txt"));
+                $log->writeLog($typeValue . ": " . exec("train -s ". $typeValue ." -c 4 -e 0.1 -v 5 -w+1 ". $weights[$size][0] ." -w-1 ". $weights[$size][1] ." models/model_".$tftype."_idf_". $size .".txt"));
             }
         }
 
