@@ -175,7 +175,7 @@ class SizeAccuracyCommand extends Command {
         foreach ($sizes as $size) {
             $log->writeLog("Starting LIBLINEAR cross-validation for size: " . $size);
             $log->writeLog("Weights: " . number_format($weights[$size][0], 2, ".", " ") . " " . number_format($weights[$size][1], 2, ".", " "));
-            $types = array(1,3,4);
+            $types = array(1,3);
             foreach ($types as $typeKey => $typeValue) {
                 $log->writeLog($typeValue . ": " . exec("train -s ". $typeValue ." -c 4 -e 0.1 -v 5 -w+1 ". $weights[$size][0] ." -w-1 ". $weights[$size][1] ." models/model_".$tftype."_idf_". $size .".txt"));
             }
