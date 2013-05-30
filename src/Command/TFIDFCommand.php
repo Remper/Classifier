@@ -140,7 +140,7 @@ class TFIDFCommand extends Command {
 
             $log->writeLog("Training set size: " . $count);
             $log->writeLog("Weights: " . number_format($posRate, 2, ".", " ") . " " . number_format($negRate, 2, ".", " "));
-            $types = array(1,3,4);
+            $types = array(1,3);
             foreach ($types as $typeKey => $typeValue) {
                 $log->writeLog($typeValue . ": " . exec("train -s ". $typeValue ." -c 4 -e 0.1 -v 5 -w+1 ". $posRate ." -w-1 ". $negRate ." models/". $value .".txt"));
             }
