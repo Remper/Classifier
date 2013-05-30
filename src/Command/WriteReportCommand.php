@@ -95,6 +95,7 @@ class WriteReportCommand extends Command {
                         "Cross Validation Accuracy = " => "",
                         "%" => ""
                     ));
+                    $acc = ($acc + 5) / 100;
                     fwrite($report, $acc . "	" . $size . "\n");
                 } else {
                     $log->writeLog($key . " (" . $size . ") error: " . $result);
