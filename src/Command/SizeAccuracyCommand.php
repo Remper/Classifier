@@ -32,6 +32,11 @@ class SizeAccuracyCommand extends Command {
                 InputArgument::OPTIONAL,
                 'Какую TF использовать'
             )
+            ->addArgument(
+                'idf',
+                InputArgument::OPTIONAL,
+                'Какую IDF использовать'
+            )
         ;
     }
 
@@ -48,6 +53,13 @@ class SizeAccuracyCommand extends Command {
         return array($posRate, $negRate);
     }
 
+    private function getParam($input, $param) {
+        $pm = $input->getArgument($param);
+        if (!$pm)
+            $pm = $param;
+        return strtolower($pm);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         //Замеряем начальное время
@@ -62,10 +74,8 @@ class SizeAccuracyCommand extends Command {
         $tokenizer = new Tokenizer($config);
 
         $vm = new VectorModel();
-        $tftype = $input->getArgument('tf');
-        if (!$tftype)
-            $tftype = "tf";
-        $tftype = strtolower($tftype);
+        $tftype = $this->getParam($input, "tf");
+        $idftype = $this->getParam($input, "idf");
 
         switch ($tftype) {
             default:
@@ -83,6 +93,23 @@ class SizeAccuracyCommand extends Command {
                 break;
         }
         $log->writeLog("Local weight: ".$tftype);
+
+        switch ($idftype) {
+            default:
+            case "idf":
+                $vm->getScheme()->setIdf(TFIDF::IDF_IDF);
+                break;
+            case "idfp":
+                $vm->getScheme()->setIdf(TFIDF::IDF_IDFP);
+                break;
+            case "deltaidf":
+                $vm->getScheme()->setIdf(TFIDF::IDF_DELTA);
+                break;
+            case "rf":
+                $vm->getScheme()->setIdf(TFIDF::IDF_RF);
+                break;
+        }
+        $log->writeLog("Global weight: ".$idftype);
 
         $dbinstance = Database::getDB();
 
